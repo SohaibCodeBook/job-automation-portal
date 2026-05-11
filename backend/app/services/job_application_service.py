@@ -58,7 +58,6 @@ _OPTIONAL_LIST_FIELDS: Final[frozenset[str]] = frozenset(
 
 _REQUIRED_LIST_FIELDS: Final[frozenset[str]] = frozenset(
     {
-        "selected_industries",
         "experience_levels",
         "omit_words",
         "must_include",
@@ -160,6 +159,14 @@ def normalize_frontend_payload(payload: dict[str, Any]) -> dict[str, Any]:
             )
 
         if canonical == "selected_regions":
+            if raw_value is None:
+                merged[canonical] = None
+            else:
+                merged[canonical] = _normalize_string_list(
+                    raw_value,
+                    optional=False,
+                )
+        elif canonical == "selected_industries":
             if raw_value is None:
                 merged[canonical] = None
             else:

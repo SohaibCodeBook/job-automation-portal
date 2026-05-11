@@ -41,6 +41,7 @@ export default function Home() {
 
   const remoteEnabled = useWatch({ control, name: "remote" });
   const hybridEnabled = useWatch({ control, name: "hybrid" });
+  const allIndustries = useWatch({ control, name: "allIndustries" });
 
   const renderSection = (stepId: string) => {
     switch (stepId) {
@@ -80,8 +81,12 @@ export default function Home() {
                   required
                   selectedValues={field.value}
                   onChange={field.onChange}
+                  allIndustriesActive={allIndustries}
+                  onAllIndustriesChange={(next) =>
+                    setValue("allIndustries", next)
+                  }
                   error={errors.selectedIndustries?.message}
-                  description="Required. Search and pick one or more industries from the list."
+                  description="Pick industries from the list, or turn on All Industries. At least one is required unless All Industries is on."
                 />
               )}
             />

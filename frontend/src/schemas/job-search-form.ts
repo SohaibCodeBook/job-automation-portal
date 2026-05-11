@@ -32,7 +32,8 @@ export const jobSearchFormSchema = z
   .object({
     firstName: requiredText,
     lastName: requiredText,
-    selectedIndustries: requiredStringArray,
+    allIndustries: z.boolean().default(false),
+    selectedIndustries: z.array(z.string().trim().min(1)).default([]),
     industryNamesFromNaics: optionalStringArray,
     remote: z.boolean().default(false),
     hybrid: z.boolean().default(false),
@@ -66,6 +67,17 @@ export const jobSearchFormSchema = z
     }),
   })
   .superRefine((values, ctx) => {
+    if (
+      !values.allIndustries &&
+      values.selectedIndustries.length === 0
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: validationMessages.selectAtLeastOne,
+        path: ["selectedIndustries"],
+      });
+    }
+
     if (
       joinedTitleLength(values.desiredJobTitle1) > JOB_TITLE_TAGS_JOINED_MAX
     ) {

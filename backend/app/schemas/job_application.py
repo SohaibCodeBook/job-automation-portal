@@ -64,9 +64,9 @@ class JobApplicationSubmissionRequest(BaseModel):
     first_name: NonEmptyStr = Field(..., max_length=120, description="Applicant first name.")
     last_name: NonEmptyStr = Field(..., max_length=120, description="Applicant last name.")
 
-    selected_industries: NonEmptyStrList = Field(
+    selected_industries: list[str] | None = Field(
         ...,
-        description="Target industries; custom entries allowed.",
+        description="Target industries; null means all industries (no filter).",
     )
     industry_names_from_naics: list[str] | None = Field(
         default=None,
@@ -128,6 +128,25 @@ class JobApplicationSubmissionRequest(BaseModel):
         default=LIMIT_JOBS_FIXED,
         description="Fixed batch size for job results; must remain 25.",
     )
+
+    @field_validator("selected_industries", mode="before")
+    @classmethod
+    def validate_selected_industries(cls, value: Any) -> list[str] | None:
+        if value is None:
+            return None
+        if not isinstance(value, list):
+            raise ValueError("selected_industries must be a list or null.")
+        cleaned = [
+            str(item).strip()
+            for item in value
+            if isinstance(item, str) and str(item).strip()
+        ]
+        deduped = list(dict.fromkeys(cleaned))
+        if not deduped:
+            raise ValueError(
+                "selected_industries must be null or a non-empty list of industries.",
+            )
+        return deduped
 
     @field_validator("job_type", mode="before")
     @classmethod

@@ -16,6 +16,9 @@ type IndustrySearchableMultiSelectProps = {
   required?: boolean;
   selectedValues: string[];
   onChange: (next: string[]) => void;
+  /** When true, search + tags are dimmed; submit payload uses null for industries. */
+  allIndustriesActive?: boolean;
+  onAllIndustriesChange?: (next: boolean) => void;
   placeholder?: string;
   description?: string;
   error?: string;
@@ -29,6 +32,8 @@ export function IndustrySearchableMultiSelect({
   required,
   selectedValues,
   onChange,
+  allIndustriesActive = false,
+  onAllIndustriesChange,
   placeholder = "Search industries…",
   description,
   error,
@@ -55,6 +60,10 @@ export function IndustrySearchableMultiSelect({
         !selectedSet.has(name) && name.toLowerCase().includes(q),
     );
   }, [query, selectedSet]);
+
+  React.useEffect(() => {
+    if (allIndustriesActive) setOpen(false);
+  }, [allIndustriesActive]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -88,12 +97,39 @@ export function IndustrySearchableMultiSelect({
       className={className}
     >
       <div ref={rootRef} className="space-y-2">
+        {onAllIndustriesChange ? (
+          <div className="flex justify-start">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={allIndustriesActive}
+              disabled={disabled}
+              onClick={() => onAllIndustriesChange(!allIndustriesActive)}
+              className={cn(
+                "inline-flex h-8 shrink-0 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
+                allIndustriesActive
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-background hover:bg-accent/50",
+                disabled && "pointer-events-none opacity-50",
+              )}
+            >
+              All Industries
+            </button>
+          </div>
+        ) : null}
+        <div
+          className={cn(
+            "space-y-2 transition-opacity",
+            allIndustriesActive && "pointer-events-none opacity-40",
+          )}
+        >
         <div className="relative">
           <Input
             id={id}
             type="search"
             autoComplete="off"
-            disabled={disabled}
+            disabled={disabled || allIndustriesActive}
             aria-invalid={Boolean(error)}
             aria-expanded={open}
             aria-controls={listId}
@@ -113,7 +149,7 @@ export function IndustrySearchableMultiSelect({
               }
             }}
           />
-          {open && !disabled ? (
+          {open && !disabled && !allIndustriesActive ? (
             <ul
               id={listId}
               role="listbox"
@@ -168,7 +204,7 @@ export function IndustrySearchableMultiSelect({
                   className="size-4 shrink-0 rounded-full"
                   onClick={() => removeIndustry(name)}
                   aria-label={`Remove ${name}`}
-                  disabled={disabled}
+                  disabled={disabled || allIndustriesActive}
                 >
                   <X className="size-3" />
                 </Button>
@@ -176,6 +212,7 @@ export function IndustrySearchableMultiSelect({
             ))}
           </div>
         ) : null}
+        </div>
       </div>
     </FormFieldWrapper>
   );
