@@ -52,7 +52,7 @@ export const jobSearchFormSchema = z
       });
     }),
     experienceLevels: requiredStringArray,
-    omitWords: requiredStringArray,
+    omitWords: z.array(z.string().trim().min(1)).default([]),
     mustInclude: z.array(z.string().trim().min(1)).default([]),
     desiredJobTitle1: requiredStringArray,
     selectedCities: optionalStringArray,

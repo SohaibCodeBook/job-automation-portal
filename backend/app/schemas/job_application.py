@@ -86,9 +86,9 @@ class JobApplicationSubmissionRequest(BaseModel):
         description="One or more experience bands (e.g. intern, junior).",
     )
 
-    omit_words: NonEmptyStrList = Field(
-        ...,
-        description="Terms that must not appear in matched roles.",
+    omit_words: list[str] | None = Field(
+        default=None,
+        description="Optional terms that must not appear in matched roles.",
     )
     must_include: list[str] | None = Field(
         default=None,
@@ -188,6 +188,7 @@ class JobApplicationSubmissionRequest(BaseModel):
 
     @field_validator(
         "industry_names_from_naics",
+        "omit_words",
         "must_include",
         "selected_cities",
         "selected_states",

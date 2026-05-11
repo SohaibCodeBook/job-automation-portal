@@ -277,7 +277,7 @@ export default function Home() {
                     tags={field.value}
                     onTagsChange={field.onChange}
                     error={errors.omitWords?.message}
-                    description="Required. Terms to exclude from matching."
+                    description="Optional. Terms to exclude from matching."
                   />
                 )}
               />
