@@ -90,9 +90,9 @@ class JobApplicationSubmissionRequest(BaseModel):
         ...,
         description="Terms that must not appear in matched roles.",
     )
-    must_include: NonEmptyStrList = Field(
-        ...,
-        description="Terms that must appear in matched roles.",
+    must_include: list[str] | None = Field(
+        default=None,
+        description="Optional terms that must appear in matched roles.",
     )
 
     desired_job_title_1: NonEmptyStr = Field(
@@ -188,6 +188,7 @@ class JobApplicationSubmissionRequest(BaseModel):
 
     @field_validator(
         "industry_names_from_naics",
+        "must_include",
         "selected_cities",
         "selected_states",
         mode="before",

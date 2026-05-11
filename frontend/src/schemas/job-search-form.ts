@@ -53,7 +53,7 @@ export const jobSearchFormSchema = z
     }),
     experienceLevels: requiredStringArray,
     omitWords: requiredStringArray,
-    mustInclude: requiredStringArray,
+    mustInclude: z.array(z.string().trim().min(1)).default([]),
     desiredJobTitle1: requiredStringArray,
     selectedCities: optionalStringArray,
     selectedStates: optionalStringArray,

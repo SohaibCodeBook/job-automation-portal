@@ -291,7 +291,7 @@ export default function Home() {
                     tags={field.value}
                     onTagsChange={field.onChange}
                     error={errors.mustInclude?.message}
-                    description="Required. Terms that must exist in results."
+                    description="Optional. Terms that must exist in results."
                   />
                 )}
               />

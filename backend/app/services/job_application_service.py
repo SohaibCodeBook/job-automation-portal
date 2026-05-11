@@ -51,6 +51,7 @@ _CANONICAL_FIELDS: Final[frozenset[str]] = frozenset(
 _OPTIONAL_LIST_FIELDS: Final[frozenset[str]] = frozenset(
     {
         "industry_names_from_naics",
+        "must_include",
         "selected_cities",
         "selected_states",
     }
@@ -60,7 +61,6 @@ _REQUIRED_LIST_FIELDS: Final[frozenset[str]] = frozenset(
     {
         "experience_levels",
         "omit_words",
-        "must_include",
     }
 )
 
