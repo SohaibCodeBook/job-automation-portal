@@ -6,6 +6,7 @@ import { useWatch } from "react-hook-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   FormSectionCard,
+  IndustrySearchableMultiSelect,
   MultiSelectInput,
   RemoteRegionSalarySection,
   SubmitButton,
@@ -72,14 +73,14 @@ export default function Home() {
               control={control}
               name="selectedIndustries"
               render={({ field }) => (
-                <TagInput
+                <IndustrySearchableMultiSelect
                   id="selectedIndustries"
                   label="Selected Industries"
                   required
-                  tags={field.value}
-                  onTagsChange={field.onChange}
+                  selectedValues={field.value}
+                  onChange={field.onChange}
                   error={errors.selectedIndustries?.message}
-                  description="Required. Add one or more industries (custom values allowed)."
+                  description="Required. Search and pick one or more industries from the list."
                 />
               )}
             />

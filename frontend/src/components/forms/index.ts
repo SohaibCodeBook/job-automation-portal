@@ -3,6 +3,7 @@ export * from "@/components/forms/form-field-wrapper";
 export * from "@/components/forms/form-step-navigation";
 export * from "@/components/forms/form-step-wrapper";
 export * from "@/components/forms/form-section-card";
+export * from "@/components/forms/industry-searchable-multi-select";
 export * from "@/components/forms/loading-button";
 export * from "@/components/forms/multi-select-input";
 export * from "@/components/forms/pay-range-dual-slider";
