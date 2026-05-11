@@ -40,6 +40,7 @@ export default function Home() {
   } = form;
 
   const remoteEnabled = useWatch({ control, name: "remote" });
+  const hybridEnabled = useWatch({ control, name: "hybrid" });
 
   const renderSection = (stepId: string) => {
     switch (stepId) {
@@ -131,7 +132,13 @@ export default function Home() {
                     id="hybrid"
                     label="Hybrid"
                     checked={field.value}
-                    onCheckedChange={field.onChange}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      if (!checked) {
+                        setValue("selectedCities", []);
+                        setValue("selectedStates", []);
+                      }
+                    }}
                     description="Include hybrid work options."
                   />
                 )}
@@ -313,7 +320,10 @@ export default function Home() {
 
       <form onSubmit={submit} className="space-y-8" noValidate>
         <div className="space-y-8">
-          {JOB_SEARCH_WIZARD_STEPS.map((step) => (
+          {JOB_SEARCH_WIZARD_STEPS.filter(
+            (step) =>
+              step.id !== "geographic-preferences" || hybridEnabled,
+          ).map((step) => (
             <FormSectionCard
               key={step.id}
               title={sectionTitle(step.title)}
