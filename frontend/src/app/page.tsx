@@ -6,6 +6,7 @@ import { useWatch } from "react-hook-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   FormSectionCard,
+  HybridLocationPreferencesPanel,
   IndustrySearchableMultiSelect,
   MultiSelectInput,
   RemoteRegionSalarySection,
@@ -151,6 +152,13 @@ export default function Home() {
             </div>
             {remoteEnabled ? (
               <RemoteRegionSalarySection
+                setValue={setValue}
+                watch={watch}
+                errors={errors}
+              />
+            ) : null}
+            {hybridEnabled ? (
+              <HybridLocationPreferencesPanel
                 setValue={setValue}
                 watch={watch}
                 errors={errors}
@@ -326,8 +334,7 @@ export default function Home() {
       <form onSubmit={submit} className="space-y-8" noValidate>
         <div className="space-y-8">
           {JOB_SEARCH_WIZARD_STEPS.filter(
-            (step) =>
-              step.id !== "geographic-preferences" || hybridEnabled,
+            (step) => step.id !== "geographic-preferences",
           ).map((step) => (
             <FormSectionCard
               key={step.id}
