@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 # Semantic renames only (camelCase / wire key → canonical schema / DB column).
 FIELD_MAP: Final[dict[str, str]] = {
-    "otherJobTitles": "job_titles",
     "employmentType": "job_type",
     "selectedRegions": "selected_regions",
     "payRangeFilter": "pay_range_filter",
@@ -39,8 +38,6 @@ WIRE_KEY_TO_CANONICAL: Final[dict[str, str]] = {
     "omitWords": "omit_words",
     "mustInclude": "must_include",
     "desiredJobTitle1": "desired_job_title_1",
-    "desiredJobTitle2": "desired_job_title_2",
-    "desiredJobTitle3": "desired_job_title_3",
     "selectedCities": "selected_cities",
     "selectedStates": "selected_states",
     "resumeUrl": "resume_url",
@@ -54,14 +51,9 @@ _CANONICAL_FIELDS: Final[frozenset[str]] = frozenset(
 _OPTIONAL_LIST_FIELDS: Final[frozenset[str]] = frozenset(
     {
         "industry_names_from_naics",
-        "job_titles",
         "selected_cities",
         "selected_states",
     }
-)
-
-_OPTIONAL_STRING_FIELDS: Final[frozenset[str]] = frozenset(
-    {"desired_job_title_2", "desired_job_title_3"},
 )
 
 _REQUIRED_LIST_FIELDS: Final[frozenset[str]] = frozenset(
@@ -111,15 +103,6 @@ def _normalize_string_list(
 
 
 def _normalize_scalar_for_field(canonical_key: str, value: Any) -> Any:
-    if canonical_key in _OPTIONAL_STRING_FIELDS:
-        if value is None:
-            return None
-        if isinstance(value, str) and not value.strip():
-            return None
-        if isinstance(value, str):
-            return value.strip()
-        raise ValueError(f"{canonical_key} must be a string or null.")
-
     if canonical_key == "limit_jobs":
         if value is None:
             raise ValueError(f"{canonical_key} cannot be null.")
@@ -226,7 +209,7 @@ def create_job_application(payload: dict[str, Any]) -> JobApplicationCreateResul
     # Convert list fields to semicolon-separated strings for DB storage.
     list_fields = [
         "selected_industries", "industry_names_from_naics", "experience_levels",
-        "omit_words", "must_include", "job_titles", "selected_cities", "selected_states",
+        "omit_words", "must_include", "selected_cities", "selected_states",
     ]
     for field in list_fields:
         if field in row and isinstance(row[field], list):

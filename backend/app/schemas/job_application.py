@@ -100,20 +100,6 @@ class JobApplicationSubmissionRequest(BaseModel):
         max_length=200,
         description="Primary target job title.",
     )
-    desired_job_title_2: str | None = Field(
-        default=None,
-        max_length=200,
-        description="Optional secondary job title.",
-    )
-    desired_job_title_3: str | None = Field(
-        default=None,
-        max_length=200,
-        description="Optional tertiary job title.",
-    )
-    job_titles: list[str] | None = Field(
-        default=None,
-        description="Additional job titles (optional).",
-    )
 
     selected_cities: list[str] | None = Field(
         default=None,
@@ -183,7 +169,6 @@ class JobApplicationSubmissionRequest(BaseModel):
 
     @field_validator(
         "industry_names_from_naics",
-        "job_titles",
         "selected_cities",
         "selected_states",
         mode="before",
@@ -194,15 +179,6 @@ class JobApplicationSubmissionRequest(BaseModel):
             return None
         cleaned = [item.strip() for item in value if isinstance(item, str) and item.strip()]
         return cleaned or None
-
-    @field_validator("desired_job_title_2", "desired_job_title_3", mode="before")
-    @classmethod
-    def empty_optional_titles(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        if isinstance(value, str) and not value.strip():
-            return None
-        return str(value).strip()
 
     @model_validator(mode="after")
     def validate_region_pay_ranges(self) -> "JobApplicationSubmissionRequest":
