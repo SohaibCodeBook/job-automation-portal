@@ -54,9 +54,6 @@ export const jobSearchFormSchema = z
     omitWords: requiredStringArray,
     mustInclude: requiredStringArray,
     desiredJobTitle1: requiredStringArray,
-    desiredJobTitle2: z.array(z.string().trim().min(1)).default([]),
-    desiredJobTitle3: z.array(z.string().trim().min(1)).default([]),
-    otherJobTitles: optionalStringArray,
     selectedCities: optionalStringArray,
     selectedStates: optionalStringArray,
     selectedRegions: z.array(z.string()).max(3).default([]),
@@ -76,26 +73,6 @@ export const jobSearchFormSchema = z
         code: "custom",
         message: validationMessages.jobTitleTagsMaxLength,
         path: ["desiredJobTitle1"],
-      });
-    }
-    if (
-      values.desiredJobTitle2.length > 0 &&
-      joinedTitleLength(values.desiredJobTitle2) > JOB_TITLE_TAGS_JOINED_MAX
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: validationMessages.jobTitleTagsMaxLength,
-        path: ["desiredJobTitle2"],
-      });
-    }
-    if (
-      values.desiredJobTitle3.length > 0 &&
-      joinedTitleLength(values.desiredJobTitle3) > JOB_TITLE_TAGS_JOINED_MAX
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: validationMessages.jobTitleTagsMaxLength,
-        path: ["desiredJobTitle3"],
       });
     }
 

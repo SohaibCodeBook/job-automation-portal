@@ -182,62 +182,18 @@ export default function Home() {
       case "desired-job-titles":
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Controller
-                control={control}
-                name="desiredJobTitle1"
-                render={({ field }) => (
-                  <TagInput
-                    id="desiredJobTitle1"
-                    label="Desired Job Title 1"
-                    required
-                    tags={field.value}
-                    onTagsChange={field.onChange}
-                    error={errors.desiredJobTitle1?.message}
-                    description="Required primary target titles. Type and press Enter to add each."
-                  />
-                )}
-              />
-              <Controller
-                control={control}
-                name="desiredJobTitle2"
-                render={({ field }) => (
-                  <TagInput
-                    id="desiredJobTitle2"
-                    label="Desired Job Title 2"
-                    tags={field.value ?? []}
-                    onTagsChange={field.onChange}
-                    error={errors.desiredJobTitle2?.message}
-                    description="Optional secondary titles."
-                  />
-                )}
-              />
-            </div>
             <Controller
               control={control}
-              name="desiredJobTitle3"
+              name="desiredJobTitle1"
               render={({ field }) => (
                 <TagInput
-                  id="desiredJobTitle3"
-                  label="Desired Job Title 3"
-                  tags={field.value ?? []}
+                  id="desiredJobTitle1"
+                  label="Desired Job Title 1"
+                  required
+                  tags={field.value}
                   onTagsChange={field.onChange}
-                  error={errors.desiredJobTitle3?.message}
-                  description="Optional tertiary titles."
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="otherJobTitles"
-              render={({ field }) => (
-                <TagInput
-                  id="otherJobTitles"
-                  label="Other Job Titles"
-                  tags={field.value ?? []}
-                  onTagsChange={field.onChange}
-                  error={errors.otherJobTitles?.message}
-                  description="Optional additional titles."
+                  error={errors.desiredJobTitle1?.message}
+                  description="Required primary target titles. Type and press Enter to add each."
                 />
               )}
             />

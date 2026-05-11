@@ -37,13 +37,8 @@ export const JOB_SEARCH_WIZARD_STEPS: WizardStep[] = [
   {
     id: "desired-job-titles",
     title: "Step 4 — Desired Job Titles",
-    description: "Define required and optional job title targets.",
-    fields: [
-      "desiredJobTitle1",
-      "desiredJobTitle2",
-      "desiredJobTitle3",
-      "otherJobTitles",
-    ],
+    description: "Define your primary target job titles.",
+    fields: ["desiredJobTitle1"],
   },
   {
     id: "geographic-preferences",
