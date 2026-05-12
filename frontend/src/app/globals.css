@@ -245,8 +245,7 @@ html:not(.dark) main > header h1 {
 
 html:not(.dark) main form > div:first-child > [data-slot="card"] {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
   background: linear-gradient(
     165deg,
     oklch(1 0 0 / 0.97) 0%,

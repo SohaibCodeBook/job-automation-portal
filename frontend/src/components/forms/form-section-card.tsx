@@ -27,7 +27,7 @@ export function FormSectionCard({
   action,
 }: FormSectionCardProps) {
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn("w-full overflow-visible", className)}>
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
