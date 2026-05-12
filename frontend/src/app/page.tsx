@@ -119,14 +119,19 @@ export default function Home() {
                     id="remote"
                     label="Remote"
                     checked={field.value}
+                    disabled={hybridEnabled}
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
-                      if (!checked) {
+                      if (checked) {
+                        setValue("hybrid", false);
+                        setValue("selectedCities", []);
+                        setValue("selectedStates", []);
+                      } else {
                         setValue("selectedRegions", []);
                         setValue("payRangeFilter", {});
                       }
                     }}
-                    description="Include fully remote jobs."
+                    description="Include fully remote jobs. Turn off Hybrid to use this."
                   />
                 )}
               />
@@ -138,14 +143,19 @@ export default function Home() {
                     id="hybrid"
                     label="Hybrid"
                     checked={field.value}
+                    disabled={remoteEnabled}
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
-                      if (!checked) {
+                      if (checked) {
+                        setValue("remote", false);
+                        setValue("selectedRegions", []);
+                        setValue("payRangeFilter", {});
+                      } else {
                         setValue("selectedCities", []);
                         setValue("selectedStates", []);
                       }
                     }}
-                    description="Include hybrid work options."
+                    description="Include hybrid work options. Turn off Remote to use this."
                   />
                 )}
               />
