@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { PortalAtmosphere } from "@/components/portal-atmosphere";
 import { Providers } from "@/app/providers";
 import { APP_CONFIG } from "@/constants/app";
 
@@ -31,10 +32,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="min-h-full bg-background font-sans text-foreground"
+        className="relative min-h-full bg-background font-sans text-foreground antialiased"
         suppressHydrationWarning
       >
-        <Providers>{children}</Providers>
+        <PortalAtmosphere />
+        <div className="relative z-[1] min-h-full">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );

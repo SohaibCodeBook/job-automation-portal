@@ -49,30 +49,38 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Light — “Job intelligence” canvas: LinkedIn-forward blue + Indeed-cool linen + teal automation signal */
+  --job-blue: #0a66c2;
+  --job-blue-ink: #004182;
+  --job-signal: #0f766e;
+  --job-linen: #f3f6f9;
+  --job-card: #ffffff;
+  --job-ink: #191919;
+
+  --background: var(--job-linen);
+  --foreground: var(--job-ink);
+  --card: oklch(0.998 0.004 245 / 0.96);
+  --card-foreground: var(--job-ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--job-ink);
+  --primary: var(--job-blue);
+  --primary-foreground: #ffffff;
+  --secondary: oklch(0.94 0.018 245);
+  --secondary-foreground: oklch(0.26 0.04 255);
+  --muted: oklch(0.935 0.012 240);
+  --muted-foreground: oklch(0.44 0.025 255);
+  --accent: oklch(0.93 0.035 200);
+  --accent-foreground: oklch(0.22 0.06 255);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
+  --border: #dce0e3;
+  --input: #e8ecf1;
+  --ring: color-mix(in oklab, var(--job-blue) 58%, white);
+  --chart-1: oklch(0.52 0.19 255);
+  --chart-2: oklch(0.48 0.1 195);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -126,5 +134,402 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ═══ Portal atmosphere: static grid + vignette (no moving beams) ═══ */
+.portal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.portal-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in oklab, var(--job-blue) 22%, transparent) 1px,
+    transparent 1.6px
+  );
+  background-size: 20px 20px;
+  mask-image: radial-gradient(
+    ellipse 100% 85% at 50% 30%,
+    black 0%,
+    transparent 72%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 100% 85% at 50% 30%,
+    black 0%,
+    transparent 72%
+  );
+  opacity: 0.38;
+}
+
+html.dark .portal-grid {
+  background-image: radial-gradient(
+    circle at center,
+    oklch(1 0 0 / 0.12) 1px,
+    transparent 1.6px
+  );
+  opacity: 0.35;
+}
+
+.portal-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 110% 90% at 50% 0%,
+    transparent 38%,
+    color-mix(in oklab, var(--background) 65%, transparent) 100%
+  );
+  opacity: 0.9;
+}
+
+html.dark .portal-vignette {
+  background: radial-gradient(
+    ellipse 100% 85% at 50% 12%,
+    transparent 28%,
+    oklch(0.08 0.02 260 / 0.75) 100%
+  );
+  opacity: 1;
+}
+
+@keyframes premium-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Light only: premium job-scraper console (does not alter `.dark` tokens) ─── */
+html:not(.dark) body {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(
+      ellipse 120% 80% at 0% -15%,
+      color-mix(in oklab, var(--job-blue) 14%, transparent) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 90% 65% at 100% 105%,
+      color-mix(in oklab, var(--job-signal) 10%, transparent) 0%,
+      transparent 48%
+    );
+  background-attachment: fixed;
+}
+
+html:not(.dark) main > header {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+html:not(.dark) main > header h1 {
+  letter-spacing: -0.025em;
+  background: linear-gradient(
+    102deg,
+    var(--job-blue-ink) 0%,
+    var(--job-blue) 42%,
+    var(--job-signal) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+html:not(.dark) main form > div:first-child > [data-slot="card"] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(
+    165deg,
+    oklch(1 0 0 / 0.97) 0%,
+    color-mix(in oklab, white 94%, var(--job-blue) 4%) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: color-mix(in oklab, var(--job-blue) 12%, var(--border));
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.65) inset,
+    0 18px 46px -26px color-mix(in oklab, var(--job-blue) 22%, transparent),
+    0 10px 28px -18px color-mix(in oklab, var(--job-signal) 14%, transparent);
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease;
+}
+
+html:not(.dark) main form > div:first-child > [data-slot="card"]:hover {
+  transform: translateY(-3px);
+}
+
+html:not(.dark) main form > div:first-child > [data-slot="card"]:active {
+  transform: translateY(-1px) scale(0.998);
+  opacity: 0.99;
+}
+
+html:not(.dark) main form > div.space-y-3.rounded-xl.border.bg-card {
+  background: linear-gradient(
+    168deg,
+    oklch(1 0 0 / 0.96) 0%,
+    color-mix(in oklab, white 93%, var(--job-blue) 3.5%) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: color-mix(in oklab, var(--job-blue) 11%, var(--border));
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.55) inset,
+    0 14px 36px -20px color-mix(in oklab, var(--job-blue) 18%, transparent);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+}
+
+html:not(.dark) main form > div.space-y-3.rounded-xl.border.bg-card:hover {
+  transform: translateY(-2px);
+}
+
+html:not(.dark) main [data-slot="card-title"] {
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+html:not(.dark) main [data-slot="button"][data-variant="default"] {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 12%, var(--job-blue)),
+    var(--job-blue)
+  );
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.28) inset,
+    0 10px 26px -8px color-mix(in oklab, var(--job-blue-ink) 42%, transparent);
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+html:not(.dark) main [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  opacity: 0.97;
+}
+
+html:not(.dark) main [data-slot="button"][data-variant="default"]:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  opacity: 1;
+}
+
+html:not(.dark) main [data-slot="button"][data-variant="outline"] {
+  transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+}
+
+html:not(.dark) main [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--job-blue) 28%, var(--border));
+}
+
+html:not(.dark) main [data-slot="input"] {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark) main [data-slot="input"]:hover:not(:disabled) {
+  transform: translateY(-0.5px);
+}
+
+html:not(.dark) main [data-slot="input"]:focus-visible {
+  transform: translateY(0);
+  border-color: color-mix(in oklab, var(--job-blue) 38%, var(--input));
+}
+
+html:not(.dark) main [data-slot="switch"] {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark) main [data-slot="switch"]:hover:not(:disabled) {
+  transform: scale(1.04);
+  opacity: 0.96;
+}
+
+html:not(.dark) main [data-slot="switch"]:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+html:not(.dark)
+  main
+  span.inline-flex.items-center.gap-1.rounded-full.border[class*="bg-primary/10"] {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark)
+  main
+  span.inline-flex.items-center.gap-1.rounded-full.border[class*="bg-primary/10"]:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+html:not(.dark) main span.inline-flex.items-center.gap-1.rounded-full.bg-muted {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark) main span.inline-flex.items-center.gap-1.rounded-full.bg-muted:hover {
+  transform: translateY(-2px);
+}
+
+html:not(.dark) main span.max-w-full.items-center.gap-1.rounded-full.bg-muted {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark) main span.max-w-full.items-center.gap-1.rounded-full.bg-muted:hover {
+  transform: translateY(-2px);
+}
+
+html:not(.dark) main div.mt-4.space-y-4.rounded-xl > div.flex.flex-wrap.gap-2 > button[type="button"] {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark)
+  main
+  div.mt-4.space-y-4.rounded-xl
+  > div.flex.flex-wrap.gap-2
+  > button[type="button"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+html:not(.dark)
+  main
+  div.mt-4.space-y-4.rounded-xl
+  > div.flex.flex-wrap.gap-2
+  > button[type="button"]:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+html:not(.dark) main [data-slot="card"][data-size="sm"] {
+  transition: transform 0.3s ease, opacity 0.25s ease;
+  border-color: color-mix(in oklab, var(--job-blue) 10%, var(--border));
+}
+
+html:not(.dark) main [data-slot="card"][data-size="sm"]:hover {
+  transform: translateY(-2px);
+}
+
+html:not(.dark) main input[type="range"]::-webkit-slider-thumb {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--job-blue) 28%, transparent);
+}
+
+html:not(.dark) main input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+html:not(.dark) main input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+  opacity: 0.92;
+}
+
+html:not(.dark) main input[type="range"]::-moz-range-thumb {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--job-blue) 28%, transparent);
+}
+
+html:not(.dark) main input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.12);
+}
+
+html:not(.dark) main .text-emerald-600 {
+  color: #057642 !important;
+}
+
+html:not(.dark) [data-slot="dropdown-menu-checkbox-item"] {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+html:not(.dark) [data-slot="dropdown-menu-checkbox-item"]:hover {
+  transform: translateX(2px);
+}
+
+html:not(.dark) main [role="option"] {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+html:not(.dark) main [role="option"]:hover {
+  transform: translateX(3px);
+}
+
+html:not(.dark) main button[role="switch"] {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+html:not(.dark) main button[role="switch"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.dark) main form > div:first-child > [data-slot="card"] {
+    animation: premium-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:nth-child(1) {
+    animation-delay: 0.04s;
+  }
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:nth-child(2) {
+    animation-delay: 0.09s;
+  }
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:nth-child(3) {
+    animation-delay: 0.14s;
+  }
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:nth-child(4) {
+    animation-delay: 0.19s;
+  }
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:nth-child(5) {
+    animation-delay: 0.24s;
+  }
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:nth-child(6) {
+    animation-delay: 0.29s;
+  }
+
+  html:not(.dark) main > header {
+    animation: premium-rise 0.48s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  html:not(.dark) main form > div.space-y-3.rounded-xl.border.bg-card {
+    animation: premium-rise 0.52s 0.18s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.dark) main form > div:first-child > [data-slot="card"],
+  html:not(.dark) main > header,
+  html:not(.dark) main form > div.space-y-3.rounded-xl.border.bg-card {
+    animation: none !important;
+  }
+
+  html:not(.dark) main form > div:first-child > [data-slot="card"]:hover,
+  html:not(.dark) main form > div.space-y-3.rounded-xl.border.bg-card:hover,
+  html:not(.dark) main [data-slot="button"][data-variant="default"]:hover:not(:disabled),
+  html:not(.dark) main [data-slot="button"][data-variant="outline"]:hover:not(:disabled),
+  html:not(.dark) main [data-slot="input"]:hover:not(:disabled),
+  html:not(.dark) main [data-slot="switch"]:hover:not(:disabled),
+  html:not(.dark)
+    main
+    span.inline-flex.items-center.gap-1.rounded-full.border[class*="bg-primary/10"]:hover,
+  html:not(.dark) main span.inline-flex.items-center.gap-1.rounded-full.bg-muted:hover,
+  html:not(.dark) main span.max-w-full.items-center.gap-1.rounded-full.bg-muted:hover,
+  html:not(.dark) main [role="option"]:hover,
+  html:not(.dark) main button[role="switch"]:hover:not(:disabled),
+  html:not(.dark)
+    main
+    div.mt-4.space-y-4.rounded-xl
+    > div.flex.flex-wrap.gap-2
+    > button[type="button"]:hover:not(:disabled),
+  html:not(.dark) main [data-slot="card"][data-size="sm"]:hover,
+  html:not(.dark) main input[type="range"]::-webkit-slider-thumb:hover,
+  html:not(.dark) main input[type="range"]::-moz-range-thumb:hover,
+  html:not(.dark) [data-slot="dropdown-menu-checkbox-item"]:hover {
+    transform: none;
+  }
+
+  .animate-spin {
+    animation: none !important;
+    opacity: 0.85;
   }
 }
