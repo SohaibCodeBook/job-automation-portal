@@ -55,8 +55,14 @@ export const jobSearchFormSchema = z
     omitWords: z.array(z.string().trim().min(1)).default([]),
     mustInclude: z.array(z.string().trim().min(1)).default([]),
     desiredJobTitle1: requiredStringArray,
-    selectedCities: optionalStringArray,
-    selectedStates: optionalStringArray,
+    selectedCities: z
+      .array(z.string().trim().min(1))
+      .max(3, "You can add at most 3 cities for hybrid locations.")
+      .default([]),
+    selectedStates: z
+      .array(z.string().trim().min(1))
+      .max(3, "You can add at most 3 states or provinces for hybrid locations.")
+      .default([]),
     selectedRegions: z.array(z.string()).max(3).default([]),
     payRangeFilter: z
       .record(z.string(), payRangeEntrySchema)
@@ -67,6 +73,17 @@ export const jobSearchFormSchema = z
     }),
   })
   .superRefine((values, ctx) => {
+    const hybridCities = values.selectedCities ?? [];
+    const hybridStates = values.selectedStates ?? [];
+    if (hybridCities.length > 0 && hybridStates.length > 0) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "Use either cities or states for hybrid locations, not both at once.",
+        path: ["selectedStates"],
+      });
+    }
+
     if (
       !values.allIndustries &&
       values.selectedIndustries.length === 0

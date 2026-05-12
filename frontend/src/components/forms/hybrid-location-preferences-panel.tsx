@@ -13,6 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { JobSearchFormValues } from "@/types/job-search-form";
 
+const HYBRID_LOCATION_LIMIT = 3 as const;
+
 type HybridLocationPreferencesPanelProps = {
   setValue: UseFormSetValue<JobSearchFormValues>;
   watch: UseFormWatch<JobSearchFormValues>;
@@ -40,8 +42,23 @@ export function HybridLocationPreferencesPanel({
   const [query, setQuery] = React.useState("");
   const [open, setOpen] = React.useState(false);
 
+  const hasCitiesOnly = selectedCities.length > 0 && selectedStates.length === 0;
+  const hasStatesOnly = selectedStates.length > 0 && selectedCities.length === 0;
+  const cityTabDisabled = selectedStates.length > 0;
+  const stateTabDisabled = selectedCities.length > 0;
+
+  React.useEffect(() => {
+    if (hasStatesOnly) setMode("state");
+    else if (hasCitiesOnly) setMode("city");
+  }, [hasCitiesOnly, hasStatesOnly]);
+
   const modeOptions = mode === "city" ? HYBRID_CITY_OPTIONS : HYBRID_STATE_OPTIONS;
   const selectedActive = mode === "city" ? selectedCities : selectedStates;
+
+  const atLimitForMode =
+    mode === "city"
+      ? selectedCities.length >= HYBRID_LOCATION_LIMIT
+      : selectedStates.length >= HYBRID_LOCATION_LIMIT;
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -57,20 +74,28 @@ export function HybridLocationPreferencesPanel({
       .slice(0, 8);
   }, [modeOptions, query, selectedActive]);
 
-  const totalAdded = selectedCities.length + selectedStates.length;
+  const activeCount = Math.max(selectedCities.length, selectedStates.length);
+  const activeKind: "city" | "state" | null =
+    selectedCities.length > 0 ? "city" : selectedStates.length > 0 ? "state" : null;
 
   const addItem = (name: string) => {
     const normalized = name.trim();
     if (!normalized) return;
+
     if (mode === "city") {
       if (selectedCities.includes(normalized)) return;
+      if (selectedCities.length >= HYBRID_LOCATION_LIMIT) return;
+      setValue("selectedStates", [], { shouldDirty: true, shouldValidate: true });
       setValue("selectedCities", [...selectedCities, normalized], {
         shouldDirty: true,
         shouldValidate: true,
       });
       return;
     }
+
     if (selectedStates.includes(normalized)) return;
+    if (selectedStates.length >= HYBRID_LOCATION_LIMIT) return;
+    setValue("selectedCities", [], { shouldDirty: true, shouldValidate: true });
     setValue("selectedStates", [...selectedStates, normalized], {
       shouldDirty: true,
       shouldValidate: true,
@@ -94,12 +119,14 @@ export function HybridLocationPreferencesPanel({
   };
 
   const onSelect = (name: string) => {
+    if (atLimitForMode) return;
     addItem(name);
     setQuery("");
     setOpen(false);
   };
 
   const noMatch = query.trim().length > 0 && filtered.length === 0;
+  const inputDisabled = atLimitForMode;
 
   return (
     <div
@@ -116,13 +143,16 @@ export function HybridLocationPreferencesPanel({
           <p className="text-sm font-semibold">Hybrid Location Preferences</p>
         </div>
         <span className="text-xs tabular-nums text-muted-foreground">
-          {totalAdded} {totalAdded === 1 ? "location" : "locations"} added
+          {activeKind === null
+            ? "0 locations"
+            : `${activeCount}/${HYBRID_LOCATION_LIMIT} ${activeKind === "city" ? "cities" : "states"}`}
         </span>
       </div>
 
       <div className="space-y-3 p-4">
         <p className="text-sm text-muted-foreground">
-          Search and add cities or states for hybrid matches.
+          Use <span className="font-medium text-foreground">cities or states</span>, not
+          both. Up to {HYBRID_LOCATION_LIMIT} per type. Clear one type to switch.
         </p>
 
         <div className="relative">
@@ -130,13 +160,20 @@ export function HybridLocationPreferencesPanel({
             <div className="flex shrink-0 border-r border-input">
               <button
                 type="button"
+                disabled={cityTabDisabled}
+                title={
+                  cityTabDisabled
+                    ? "Remove all states to add cities instead."
+                    : undefined
+                }
                 onClick={() => {
+                  if (cityTabDisabled) return;
                   setMode("city");
                   setOpen(false);
                   setQuery("");
                 }}
                 className={cn(
-                  "h-10 px-4 text-sm font-medium transition-colors",
+                  "h-10 px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45",
                   mode === "city"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted",
@@ -146,13 +183,20 @@ export function HybridLocationPreferencesPanel({
               </button>
               <button
                 type="button"
+                disabled={stateTabDisabled}
+                title={
+                  stateTabDisabled
+                    ? "Remove all cities to add states instead."
+                    : undefined
+                }
                 onClick={() => {
+                  if (stateTabDisabled) return;
                   setMode("state");
                   setOpen(false);
                   setQuery("");
                 }}
                 className={cn(
-                  "h-10 border-l border-input px-4 text-sm font-medium transition-colors",
+                  "h-10 border-l border-input px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45",
                   mode === "state"
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted",
@@ -163,14 +207,19 @@ export function HybridLocationPreferencesPanel({
             </div>
             <Input
               value={query}
+              disabled={inputDisabled}
               onChange={(event) => {
                 setQuery(event.target.value);
-                setOpen(true);
+                if (!inputDisabled) setOpen(true);
               }}
-              onFocus={() => setOpen(true)}
+              onFocus={() => {
+                if (!inputDisabled) setOpen(true);
+              }}
               onKeyDown={(event) => {
+                if (inputDisabled) return;
                 if (event.key === "Enter") {
                   event.preventDefault();
+                  if (atLimitForMode) return;
                   if (filtered[0]) {
                     onSelect(filtered[0].name);
                   } else if (query.trim()) {
@@ -181,14 +230,14 @@ export function HybridLocationPreferencesPanel({
                   setOpen(false);
                 }
               }}
-              className="h-10 border-0 ring-0 focus-visible:ring-0"
+              className="h-10 border-0 ring-0 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
               placeholder={
                 mode === "city" ? "Search cities..." : "Search states / provinces..."
               }
             />
           </div>
 
-          {open ? (
+          {open && !inputDisabled ? (
             <div className="absolute z-50 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
               {filtered.map((opt) => (
                 <button
@@ -208,7 +257,7 @@ export function HybridLocationPreferencesPanel({
                 </button>
               ))}
 
-              {noMatch ? (
+              {noMatch && !atLimitForMode ? (
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent"
@@ -226,13 +275,21 @@ export function HybridLocationPreferencesPanel({
           ) : null}
         </div>
 
+        {atLimitForMode ? (
+          <p className="text-xs text-muted-foreground">
+            Maximum {HYBRID_LOCATION_LIMIT}{" "}
+            {mode === "city" ? "cities" : "states or provinces"} — remove one to add
+            another.
+          </p>
+        ) : null}
+
         {(errors.selectedCities?.message || errors.selectedStates?.message) && (
           <p className="text-xs text-destructive">
             {errors.selectedCities?.message ?? errors.selectedStates?.message}
           </p>
         )}
 
-        {totalAdded > 0 ? (
+        {activeCount > 0 ? (
           <div className="flex flex-wrap gap-2">
             {selectedCities.map((name) => {
               const found = optionForName(HYBRID_CITY_OPTIONS, name);
