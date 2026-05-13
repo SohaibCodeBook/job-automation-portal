@@ -25,6 +25,7 @@ type IndustrySearchableMultiSelectProps = {
   error?: string;
   disabled?: boolean;
   className?: string;
+  labelHint?: string;
 };
 
 export function IndustrySearchableMultiSelect({
@@ -40,6 +41,7 @@ export function IndustrySearchableMultiSelect({
   error,
   disabled,
   className,
+  labelHint,
 }: IndustrySearchableMultiSelectProps) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -196,6 +198,7 @@ export function IndustrySearchableMultiSelect({
       description={description}
       error={error}
       className={className}
+      labelHint={labelHint}
     >
       <div ref={rootRef} className="space-y-2">
         {onAllIndustriesChange ? (
@@ -253,31 +256,31 @@ export function IndustrySearchableMultiSelect({
           </div>
           {listPortal}
 
-        {selectedValues.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {selectedValues.map((name) => (
-              <span
-                key={name}
-                className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs"
-              >
-                <span className="truncate" title={name}>
-                  {name}
-                </span>
-                <Button
-                  type="button"
-                  size="icon-xs"
-                  variant="ghost"
-                  className="size-4 shrink-0 rounded-full"
-                  onClick={() => removeIndustry(name)}
-                  aria-label={`Remove ${name}`}
-                  disabled={disabled || allIndustriesActive}
+          {selectedValues.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {selectedValues.map((name) => (
+                <span
+                  key={name}
+                  className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs"
                 >
-                  <X className="size-3" />
-                </Button>
-              </span>
-            ))}
-          </div>
-        ) : null}
+                  <span className="truncate" title={name}>
+                    {name}
+                  </span>
+                  <Button
+                    type="button"
+                    size="icon-xs"
+                    variant="ghost"
+                    className="size-4 shrink-0 rounded-full"
+                    onClick={() => removeIndustry(name)}
+                    aria-label={`Remove ${name}`}
+                    disabled={disabled || allIndustriesActive}
+                  >
+                    <X className="size-3" />
+                  </Button>
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </FormFieldWrapper>

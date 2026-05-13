@@ -23,6 +23,14 @@ import {
   EMPLOYMENT_TYPE_OPTIONS,
   EXPERIENCE_LEVEL_OPTIONS,
 } from "@/constants/job-search-form";
+import {
+  HINT_DESIRED_JOB_TITLES,
+  HINT_HYBRID_TOGGLE,
+  HINT_MUST_INCLUDE,
+  HINT_OMIT_WORDS,
+  HINT_REMOTE_TOGGLE,
+  HINT_SELECTED_INDUSTRIES,
+} from "@/constants/form-field-hints";
 import { JOB_SEARCH_WIZARD_STEPS, WIZARD_STEP_CHAIN_LABELS } from "@/constants/job-search-wizard";
 import { WIZARD_STEP_ICONS } from "@/constants/wizard-step-icons";
 import {
@@ -122,6 +130,7 @@ export default function Home() {
                   id="selectedIndustries"
                   label="Selected Industries"
                   required
+                  labelHint={HINT_SELECTED_INDUSTRIES}
                   selectedValues={field.value}
                   onChange={field.onChange}
                   allIndustriesActive={allIndustries}
@@ -160,6 +169,7 @@ export default function Home() {
                   <ToggleSwitchField
                     id="remote"
                     label="Remote"
+                    labelHint={HINT_REMOTE_TOGGLE}
                     checked={field.value}
                     disabled={hybridEnabled}
                     onCheckedChange={(checked) => {
@@ -184,6 +194,7 @@ export default function Home() {
                   <ToggleSwitchField
                     id="hybrid"
                     label="Hybrid"
+                    labelHint={HINT_HYBRID_TOGGLE}
                     checked={field.value}
                     disabled={remoteEnabled}
                     onCheckedChange={(checked) => {
@@ -260,8 +271,9 @@ export default function Home() {
               render={({ field }) => (
                 <TagInput
                   id="desiredJobTitle1"
-                  label="Desired Job Title 1"
+                  label="Desired Job Titles"
                   required
+                  labelHint={HINT_DESIRED_JOB_TITLES}
                   tags={field.value}
                   onTagsChange={field.onChange}
                   error={errors.desiredJobTitle1?.message}
@@ -326,6 +338,7 @@ export default function Home() {
                   <TagInput
                     id="omitWords"
                     label="Omit Words"
+                    labelHint={HINT_OMIT_WORDS}
                     tags={field.value}
                     onTagsChange={field.onChange}
                     error={errors.omitWords?.message}
@@ -340,6 +353,7 @@ export default function Home() {
                   <TagInput
                     id="mustInclude"
                     label="Must Include"
+                    labelHint={HINT_MUST_INCLUDE}
                     tags={field.value}
                     onTagsChange={field.onChange}
                     error={errors.mustInclude?.message}

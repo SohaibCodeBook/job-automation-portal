@@ -20,6 +20,7 @@ type TagInputProps = {
   disabled?: boolean;
   maxTags?: number;
   className?: string;
+  labelHint?: string;
 };
 
 export function TagInput({
@@ -34,6 +35,7 @@ export function TagInput({
   disabled,
   maxTags,
   className,
+  labelHint,
 }: TagInputProps) {
   const [value, setValue] = React.useState("");
 
@@ -58,6 +60,7 @@ export function TagInput({
       description={description}
       error={error}
       className={className}
+      labelHint={labelHint}
     >
       <div className="space-y-2">
         <Input

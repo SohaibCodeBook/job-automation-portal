@@ -15,6 +15,7 @@ type ToggleSwitchFieldProps = {
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
+  labelHint?: string;
 };
 
 export function ToggleSwitchField({
@@ -26,6 +27,7 @@ export function ToggleSwitchField({
   onCheckedChange,
   disabled,
   className,
+  labelHint,
 }: ToggleSwitchFieldProps) {
   return (
     <FormFieldWrapper
@@ -34,6 +36,7 @@ export function ToggleSwitchField({
       description={description}
       error={error}
       className={className}
+      labelHint={labelHint}
     >
       <div className="flex min-h-10 items-center">
         <Switch
