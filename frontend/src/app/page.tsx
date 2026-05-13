@@ -4,6 +4,8 @@ import * as React from "react";
 import { Controller } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 
+import { AlertTriangle } from "lucide-react";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   FormSectionCard,
@@ -40,6 +42,7 @@ import {
 import { useJobSearchSpecificationsForm } from "@/hooks/use-job-search-specifications-form";
 import { getFieldErrorMessage } from "@/lib/validation";
 import { JOB_LIMIT } from "@/schemas/job-search-form";
+import { validationMessages } from "@/schemas/shared";
 import type { JobSearchFormValues } from "@/types/job-search-form";
 
 function sectionTitle(stepTitle: string): string {
@@ -54,12 +57,19 @@ export default function Home() {
     control,
     setValue,
     watch,
+    clearErrors,
     formState: { errors },
   } = form;
 
   const remoteEnabled = useWatch({ control, name: "remote" });
   const hybridEnabled = useWatch({ control, name: "hybrid" });
   const allIndustries = useWatch({ control, name: "allIndustries" });
+
+  React.useEffect(() => {
+    if (!remoteEnabled && !hybridEnabled) return;
+    if (errors.remote?.message !== validationMessages.workModeRequired) return;
+    clearErrors("remote");
+  }, [remoteEnabled, hybridEnabled, errors.remote?.message, clearErrors]);
 
   const visibleSteps = React.useMemo(
     () =>
@@ -158,7 +168,11 @@ export default function Home() {
             />
           </div>
         );
-      case "work-preferences":
+      case "work-preferences": {
+        const workModeError =
+          !remoteEnabled &&
+          !hybridEnabled &&
+          errors.remote?.message === validationMessages.workModeRequired;
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -172,6 +186,11 @@ export default function Home() {
                     labelHint={HINT_REMOTE_TOGGLE}
                     checked={field.value}
                     disabled={hybridEnabled}
+                    className={
+                      workModeError
+                        ? "rounded-lg border-2 border-destructive bg-background/80 p-3 shadow-sm"
+                        : undefined
+                    }
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
                       if (checked) {
@@ -197,6 +216,11 @@ export default function Home() {
                     labelHint={HINT_HYBRID_TOGGLE}
                     checked={field.value}
                     disabled={remoteEnabled}
+                    className={
+                      workModeError
+                        ? "rounded-lg border-2 border-destructive bg-background/80 p-3 shadow-sm"
+                        : undefined
+                    }
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
                       if (checked) {
@@ -213,6 +237,19 @@ export default function Home() {
                 )}
               />
             </div>
+            {workModeError ? (
+              <p
+                className="flex items-start gap-2 text-sm font-medium text-destructive"
+                role="alert"
+              >
+                <AlertTriangle
+                  className="mt-0.5 size-4 shrink-0"
+                  strokeWidth={2}
+                  aria-hidden
+                />
+                <span>{errors.remote?.message}</span>
+              </p>
+            ) : null}
             {remoteEnabled ? (
               <RemoteRegionSalarySection
                 setValue={setValue}
@@ -262,6 +299,7 @@ export default function Home() {
             />
           </div>
         );
+      }
       case "desired-job-titles":
         return (
           <div className="space-y-4">

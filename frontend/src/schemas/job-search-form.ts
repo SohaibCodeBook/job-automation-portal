@@ -105,6 +105,26 @@ export const jobSearchFormSchema = z
       });
     }
 
+    if (!values.remote && !values.hybrid) {
+      ctx.addIssue({
+        code: "custom",
+        message: validationMessages.workModeRequired,
+        path: ["remote"],
+      });
+    }
+
+    if (
+      values.hybrid &&
+      hybridCities.length === 0 &&
+      hybridStates.length === 0
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: validationMessages.hybridLocationRequired,
+        path: ["selectedCities"],
+      });
+    }
+
     if (!values.remote) {
       return;
     }

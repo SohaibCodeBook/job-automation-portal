@@ -7,6 +7,10 @@ export const validationMessages = {
   limitJobsFixed: "Limit jobs must remain set to 25.",
   jobTitleTagsMaxLength:
     "Combined tags must be at most 200 characters (API limit).",
+  workModeRequired:
+    "Please select at least one work mode — Remote or Hybrid.",
+  hybridLocationRequired:
+    "Select at least one city or one state/province when Hybrid is enabled.",
 } as const;
 
 export const requiredText = z.string().trim().min(1, validationMessages.required);
