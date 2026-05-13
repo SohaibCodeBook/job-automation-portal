@@ -36,7 +36,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         checked={mounted ? isDark : false}
         onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
         disabled={!mounted}
-        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        aria-label={
+          mounted
+            ? isDark
+              ? "Switch to light mode"
+              : "Switch to dark mode"
+            : "Toggle color theme"
+        }
       />
       <Moon
         className="size-4 shrink-0 text-muted-foreground"
