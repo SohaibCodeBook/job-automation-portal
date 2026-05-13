@@ -16,6 +16,8 @@ type FormFieldWrapperProps = {
   labelClassName?: string;
   /** Rich hint beside the label (info icon + tooltip / tap). */
   labelHint?: string;
+  /** Optional classes for the description paragraph (e.g. tone when a parent is “active”). */
+  descriptionClassName?: string;
   children: React.ReactNode;
 };
 
@@ -28,6 +30,7 @@ export function FormFieldWrapper({
   className,
   labelClassName,
   labelHint,
+  descriptionClassName,
   children,
 }: FormFieldWrapperProps) {
   const descriptionId = React.useId();
@@ -59,7 +62,10 @@ export function FormFieldWrapper({
       {description ? (
         <p
           id={descriptionId}
-          className="text-[0.8125rem] leading-relaxed text-muted-foreground"
+          className={cn(
+            "text-[0.8125rem] leading-relaxed text-muted-foreground",
+            descriptionClassName,
+          )}
         >
           {description}
         </p>

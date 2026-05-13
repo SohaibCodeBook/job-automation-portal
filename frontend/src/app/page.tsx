@@ -188,7 +188,7 @@ export default function Home() {
                     disabled={hybridEnabled}
                     className={
                       workModeError
-                        ? "rounded-lg border-2 border-destructive bg-background/80 p-3 shadow-sm"
+                        ? "border-2 border-destructive bg-background/80 shadow-sm ring-1 ring-destructive/20"
                         : undefined
                     }
                     onCheckedChange={(checked) => {
@@ -218,7 +218,7 @@ export default function Home() {
                     disabled={remoteEnabled}
                     className={
                       workModeError
-                        ? "rounded-lg border-2 border-destructive bg-background/80 p-3 shadow-sm"
+                        ? "border-2 border-destructive bg-background/80 shadow-sm ring-1 ring-destructive/20"
                         : undefined
                     }
                     onCheckedChange={(checked) => {

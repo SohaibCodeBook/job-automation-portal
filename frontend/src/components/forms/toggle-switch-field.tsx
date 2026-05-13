@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 import { FormFieldWrapper } from "./form-field-wrapper";
 
@@ -35,8 +36,20 @@ export function ToggleSwitchField({
       htmlFor={id}
       description={description}
       error={error}
-      className={className}
       labelHint={labelHint}
+      descriptionClassName={
+        checked && !disabled
+          ? "text-primary/85 dark:text-primary/80"
+          : undefined
+      }
+      className={cn(
+        "rounded-lg border p-3 transition-[border-color,box-shadow,background-color] duration-200",
+        checked && !disabled
+          ? "border-2 border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
+          : "border-border bg-card/80",
+        disabled && "opacity-70",
+        className,
+      )}
     >
       <div className="flex min-h-10 items-center">
         <Switch
