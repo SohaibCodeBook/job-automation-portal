@@ -128,7 +128,7 @@ export default function Home() {
               render={({ field }) => (
                 <IndustrySearchableMultiSelect
                   id="selectedIndustries"
-                  label="Selected Industries"
+                  label="Select Industries"
                   required
                   labelHint={HINT_SELECTED_INDUSTRIES}
                   selectedValues={field.value}
@@ -271,7 +271,7 @@ export default function Home() {
               render={({ field }) => (
                 <TagInput
                   id="desiredJobTitle1"
-                  label="Desired Job Titles"
+                  label="Your Target Roles"
                   required
                   labelHint={HINT_DESIRED_JOB_TITLES}
                   tags={field.value}
