@@ -23,6 +23,8 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-job-title-start: var(--job-title-gradient-start);
+  --color-job-title-end: var(--job-title-gradient-end);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -53,6 +55,9 @@
   --job-blue: #0a66c2;
   --job-blue-ink: #004182;
   --job-signal: #0f766e;
+  /** Matches main hero title gradient (blue → teal); reuse for “section complete” affordances. */
+  --job-title-gradient-start: #1d67a4;
+  --job-title-gradient-end: #13807a;
   --job-linen: #f3f6f9;
   --job-card: #ffffff;
   --job-ink: #191919;
@@ -92,6 +97,8 @@
 }
 
 .dark {
+  --job-title-gradient-start: #6ba3d9;
+  --job-title-gradient-end: #3db8a8;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

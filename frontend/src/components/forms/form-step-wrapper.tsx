@@ -8,6 +8,7 @@ type FormStepWrapperProps = {
   stepNumber: number;
   totalSteps: number;
   children: React.ReactNode;
+  icon?: React.ReactNode;
 };
 
 export function FormStepWrapper({
@@ -16,6 +17,7 @@ export function FormStepWrapper({
   stepNumber,
   totalSteps,
   children,
+  icon,
 }: FormStepWrapperProps) {
   const progress = (stepNumber / totalSteps) * 100;
 
@@ -43,7 +45,12 @@ export function FormStepWrapper({
         </div>
       </div>
       <div className="transition-all duration-300 ease-out data-[state=active]:animate-in data-[state=active]:fade-in-0 data-[state=active]:slide-in-from-right-2">
-        <FormSectionCard title={title} description={description}>
+        <FormSectionCard
+          title={title}
+          description={description}
+          sectionNumber={stepNumber}
+          icon={icon}
+        >
           {children}
         </FormSectionCard>
       </div>

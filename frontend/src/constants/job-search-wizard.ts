@@ -7,6 +7,16 @@ type WizardStep = {
   fields: Array<keyof JobSearchFormValues>;
 };
 
+/** Short labels for the steps chain (uppercase in UI). */
+export const WIZARD_STEP_CHAIN_LABELS: Record<string, string> = {
+  "personal-information": "Personal",
+  "industry-preferences": "Industry",
+  "work-preferences": "Work prefs",
+  "geographic-preferences": "Location",
+  "desired-job-titles": "Titles",
+  "other-details": "Details",
+};
+
 export const JOB_SEARCH_WIZARD_STEPS: WizardStep[] = [
   {
     id: "personal-information",

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Controller } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 
@@ -14,16 +15,24 @@ import {
   TagInput,
   TextInputField,
   ToggleSwitchField,
+  FormCompletionProgress,
+  WizardStepsChain,
 } from "@/components/forms";
 import { Input } from "@/components/ui/input";
 import {
   EMPLOYMENT_TYPE_OPTIONS,
   EXPERIENCE_LEVEL_OPTIONS,
 } from "@/constants/job-search-form";
-import { JOB_SEARCH_WIZARD_STEPS } from "@/constants/job-search-wizard";
+import { JOB_SEARCH_WIZARD_STEPS, WIZARD_STEP_CHAIN_LABELS } from "@/constants/job-search-wizard";
+import { WIZARD_STEP_ICONS } from "@/constants/wizard-step-icons";
+import {
+  computeWizardStepCompletion,
+  getActiveWizardStepIndex,
+} from "@/lib/job-search-wizard-progress";
 import { useJobSearchSpecificationsForm } from "@/hooks/use-job-search-specifications-form";
 import { getFieldErrorMessage } from "@/lib/validation";
 import { JOB_LIMIT } from "@/schemas/job-search-form";
+import type { JobSearchFormValues } from "@/types/job-search-form";
 
 function sectionTitle(stepTitle: string): string {
   return stepTitle.replace(/^Step \d+ — /, "");
@@ -43,6 +52,39 @@ export default function Home() {
   const remoteEnabled = useWatch({ control, name: "remote" });
   const hybridEnabled = useWatch({ control, name: "hybrid" });
   const allIndustries = useWatch({ control, name: "allIndustries" });
+
+  const visibleSteps = React.useMemo(
+    () =>
+      JOB_SEARCH_WIZARD_STEPS.filter(
+        (step) => step.id !== "geographic-preferences",
+      ),
+    [],
+  );
+
+  const stepIds = React.useMemo(
+    () => visibleSteps.map((s) => s.id),
+    [visibleSteps],
+  );
+
+  const formValues = useWatch({ control }) as JobSearchFormValues;
+
+  const completion = React.useMemo(
+    () => computeWizardStepCompletion(formValues, stepIds),
+    [formValues, stepIds],
+  );
+  const activeWizardIndex = React.useMemo(
+    () => getActiveWizardStepIndex(completion),
+    [completion],
+  );
+
+  const wizardChainSteps = React.useMemo(
+    () =>
+      visibleSteps.map((s) => ({
+        id: s.id,
+        label: WIZARD_STEP_CHAIN_LABELS[s.id] ?? sectionTitle(s.title),
+      })),
+    [visibleSteps],
+  );
 
   const renderSection = (stepId: string) => {
     switch (stepId) {
@@ -335,25 +377,45 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <header className="flex items-start justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Job Search Specifications
+        <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+          <span className="bg-clip-text text-transparent [background-image:linear-gradient(to_right,var(--job-title-gradient-start),var(--job-title-gradient-end))]">
+            Job Search Specifications
+          </span>
         </h1>
         <ThemeToggle />
       </header>
 
+      <div className="space-y-3">
+        <FormCompletionProgress completion={completion} />
+
+        <WizardStepsChain
+          steps={wizardChainSteps}
+          completion={completion}
+          activeIndex={activeWizardIndex}
+          className="rounded-xl border border-border bg-card/90 px-3 py-3.5 shadow-sm backdrop-blur-sm sm:px-5"
+        />
+      </div>
+
       <form onSubmit={submit} className="space-y-8" noValidate>
         <div className="space-y-8">
-          {JOB_SEARCH_WIZARD_STEPS.filter(
-            (step) => step.id !== "geographic-preferences",
-          ).map((step) => (
-            <FormSectionCard
-              key={step.id}
-              title={sectionTitle(step.title)}
-              description={step.description}
-            >
-              {renderSection(step.id)}
-            </FormSectionCard>
-          ))}
+          {visibleSteps.map((step, index) => {
+            const StepIcon = WIZARD_STEP_ICONS[step.id];
+            return (
+              <FormSectionCard
+                key={step.id}
+                sectionId={`section-${step.id}`}
+                title={sectionTitle(step.title)}
+                description={step.description}
+                sectionNumber={index + 1}
+                sectionComplete={completion[index] === true}
+                icon={
+                  StepIcon ? <StepIcon className="size-5" strokeWidth={1.75} /> : undefined
+                }
+              >
+                {renderSection(step.id)}
+              </FormSectionCard>
+            );
+          })}
         </div>
 
         <div className="space-y-3 rounded-xl border bg-card p-4 sm:p-5">
