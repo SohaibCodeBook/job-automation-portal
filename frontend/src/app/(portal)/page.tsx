@@ -6,6 +6,7 @@ import { useWatch } from "react-hook-form";
 
 import { AlertTriangle } from "lucide-react";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   FormSectionCard,
@@ -434,7 +435,10 @@ export default function Home() {
             Job Search Specifications
           </span>
         </h1>
-        <ThemeToggle />
+        <div className="flex shrink-0 items-center gap-2">
+          <SignOutButton />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="space-y-3">
