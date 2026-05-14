@@ -192,9 +192,15 @@ def normalize_frontend_payload(payload: dict[str, Any]) -> dict[str, Any]:
     return merged
 
 
-def create_job_application(payload: dict[str, Any]) -> JobApplicationCreateResult:
+def create_job_application(
+    payload: dict[str, Any],
+    *,
+    user_id: str,
+) -> JobApplicationCreateResult:
     """
     Normalize a raw frontend payload, validate, insert into ``job_applications``.
+
+    ``user_id`` is ``auth.users.id`` for the signed-in user (validated before insert).
 
     Returns a plain dict (TypedDict shape): success, id, error.
     """
@@ -213,6 +219,7 @@ def create_job_application(payload: dict[str, Any]) -> JobApplicationCreateResul
         }
 
     row = validated.model_dump(mode="json", exclude_none=True)
+    row["user_id"] = user_id
     # Convert list fields to semicolon-separated strings for DB storage.
     list_fields = [
         "selected_industries", "industry_names_from_naics", "experience_levels",
