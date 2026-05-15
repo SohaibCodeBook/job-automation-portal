@@ -1,22 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
-import { OAuthGoogleButton } from "@/components/auth/oauth-google-button";
 import { LoadingButton } from "@/components/forms/loading-button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
 
 function safeNextParam(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
@@ -25,38 +20,52 @@ function safeNextParam(value: string | null) {
   return value;
 }
 
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="currentColor"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="currentColor"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="currentColor"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      />
+    </svg>
+  );
+}
+
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNextParam(searchParams.get("next"));
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (searchParams.get("error") === "auth") {
+    const err = searchParams.get("error");
+    if (err === "AccessDenied" || err === "Configuration") {
+      setError(
+        "Sign-in was denied. Use the Google account that matches an existing user in this system.",
+      );
+    } else if (err) {
       setError("Sign-in failed. Please try again.");
     }
   }, [searchParams]);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onGoogle() {
     setError(null);
     setLoading(true);
-    const supabase = createClient();
-    const { error: signError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    await signIn("google", { callbackUrl: next });
     setLoading(false);
-    if (signError) {
-      setError(signError.message);
-      return;
-    }
-    router.push(next);
-    router.refresh();
   }
 
   return (
@@ -64,75 +73,27 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
         <CardDescription>
-          Use your email or Google to access your job search specifications.
+          Sign in with Google using the account registered for this portal.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <OAuthGoogleButton next={next} />
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or email</span>
-          </div>
-        </div>
-        <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="login-email">Email</Label>
-            <Input
-              id="login-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="login-password">Password</Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs font-medium text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <Input
-              id="login-password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {error ? (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <LoadingButton
-            type="submit"
-            className="w-full"
-            loading={loading}
-            loadingText="Signing in…"
-          >
-            Sign in
-          </LoadingButton>
-        </form>
+      <CardContent className="space-y-4">
+        <LoadingButton
+          type="button"
+          variant="outline"
+          className="w-full"
+          loading={loading}
+          loadingText="Redirecting…"
+          onClick={() => void onGoogle()}
+        >
+          <GoogleIcon className="size-4" />
+          Continue with Google
+        </LoadingButton>
+        {error ? (
+          <p className="text-center text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        ) : null}
       </CardContent>
-      <CardFooter className="justify-center border-t-0 pt-0">
-        <p className="text-sm text-muted-foreground">
-          No account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
-            Create one
-          </Link>
-        </p>
-      </CardFooter>
     </Card>
   );
 }

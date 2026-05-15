@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from dotenv import load_dotenv
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
@@ -21,15 +21,6 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = Field(
         default="http://localhost:3000",
         description="Comma-separated list of allowed origins.",
-    )
-
-    SUPABASE_URL: str | None = Field(
-        default=None,
-        description="Supabase project URL (https://<ref>.supabase.co).",
-    )
-    SUPABASE_SERVICE_ROLE_KEY: SecretStr | None = Field(
-        default=None,
-        description="Supabase service role key (server-side only; never expose to clients).",
     )
 
     @field_validator("CORS_ORIGINS", mode="before")

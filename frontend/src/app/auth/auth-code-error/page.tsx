@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { APP_CONFIG } from "@/constants/app";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,15 +17,13 @@ export default function AuthCodeErrorPage() {
         <CardHeader>
           <CardTitle>Sign-in could not be completed</CardTitle>
           <CardDescription>
-            The authorization link was missing, invalid, or expired. Try signing
-            in again.
+            The authentication request was cancelled or failed. Try signing in
+            again with Google.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          If you were using Google, confirm that{" "}
-          <span className="font-medium text-foreground">{APP_CONFIG.name}</span>{" "}
-          is allowed in your Google account and that redirect URLs match your
-          Supabase project settings.
+          If you continue to see this, confirm you are using a Google account
+          that exists in this application&apos;s user directory.
         </CardContent>
         <CardFooter>
           <Button asChild>
