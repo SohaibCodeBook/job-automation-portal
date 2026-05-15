@@ -43,29 +43,69 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+async function setGoogleIntent(intent: "signin" | "signup") {
+  const res = await fetch("/api/auth/google-intent", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ intent }),
+  });
+  if (!res.ok) {
+    throw new Error("Could not start Google.");
+  }
+}
+
 export function LoginForm() {
   const searchParams = useSearchParams();
   const next = safeNextParam(searchParams.get("next"));
 
   const [error, setError] = React.useState<string | null>(null);
-  const [loading, setLoading] = React.useState(false);
+  const [loadingSignIn, setLoadingSignIn] = React.useState(false);
+  const [loadingCreate, setLoadingCreate] = React.useState(false);
 
   React.useEffect(() => {
     const err = searchParams.get("error");
-    if (err === "AccessDenied" || err === "Configuration") {
+    if (err === "no_account") {
       setError(
-        "Sign-in was denied. Use the Google account that matches an existing user in this system.",
+        "No account for this Google user. Use Create New Account first.",
       );
+    } else if (err === "account_exists") {
+      setError(
+        "This Google account is already registered. Use Sign in with Google.",
+      );
+    } else if (err === "oauth_email") {
+      setError("Google did not return an email. Try another Google account.");
+    } else if (err === "oauth_create_failed") {
+      setError("Could not create the account. Please try again.");
+    } else if (err === "AccessDenied" || err === "Configuration") {
+      setError("Sign-in was cancelled or denied. Please try again.");
     } else if (err) {
-      setError("Sign-in failed. Please try again.");
+      setError("Something went wrong. Please try again.");
     }
   }, [searchParams]);
 
-  async function onGoogle() {
+  async function onSignInWithGoogle() {
     setError(null);
-    setLoading(true);
-    await signIn("google", { callbackUrl: next });
-    setLoading(false);
+    setLoadingSignIn(true);
+    try {
+      await setGoogleIntent("signin");
+      await signIn("google", { callbackUrl: next });
+    } catch {
+      setError("Could not start Google sign-in.");
+      setLoadingSignIn(false);
+    }
+  }
+
+  async function onCreateNewAccount() {
+    setError(null);
+    setLoadingCreate(true);
+    try {
+      await setGoogleIntent("signup");
+      await signIn("google", { callbackUrl: next });
+    } catch {
+      setError("Could not start account creation.");
+      setLoadingCreate(false);
+    }
   }
 
   return (
@@ -73,20 +113,32 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle>Sign in</CardTitle>
         <CardDescription>
-          Sign in with Google using the account registered for this portal.
+          Google only — sign in with an existing account or create one with the
+          same Google OAuth flow.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <LoadingButton
           type="button"
-          variant="outline"
+          variant="default"
           className="w-full"
-          loading={loading}
+          loading={loadingSignIn}
           loadingText="Redirecting…"
-          onClick={() => void onGoogle()}
+          onClick={() => void onSignInWithGoogle()}
         >
           <GoogleIcon className="size-4" />
-          Continue with Google
+          Sign in with Google
+        </LoadingButton>
+        <LoadingButton
+          type="button"
+          variant="outline"
+          className="w-full"
+          loading={loadingCreate}
+          loadingText="Redirecting…"
+          onClick={() => void onCreateNewAccount()}
+        >
+          <GoogleIcon className="size-4" />
+          Create New Account
         </LoadingButton>
         {error ? (
           <p className="text-center text-sm text-destructive" role="alert">

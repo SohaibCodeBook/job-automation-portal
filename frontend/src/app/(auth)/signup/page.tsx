@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Account creation is not available with Google-only sign-in; use /login. */
+/** Legacy URL: account creation uses Google OAuth on /login ("Create New Account"). */
 export default function SignupPage() {
   redirect("/login");
 }
