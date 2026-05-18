@@ -2,7 +2,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load backend/.env before any app imports touch Settings or Supabase.
+# Load backend/.env before any app imports touch Settings.
 _BACKEND_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(_BACKEND_ROOT / ".env")
 

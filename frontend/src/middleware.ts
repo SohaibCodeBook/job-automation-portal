@@ -10,8 +10,8 @@ function safeNextPath(pathname: string) {
 }
 
 function isPublicPath(pathname: string) {
+  // NextAuth handler + Google intent cookie only (all other APIs are on FastAPI).
   if (pathname.startsWith("/api/auth")) return true;
-  if (pathname.startsWith("/api/")) return true;
   return (
     pathname === "/login" ||
     pathname === "/signup" ||
