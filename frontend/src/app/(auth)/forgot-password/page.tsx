@@ -3,6 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { requestPasswordReset } from "@/lib/api/auth-client";
 import { LoadingButton } from "@/components/forms/loading-button";
 import {
   Card,
@@ -26,17 +27,9 @@ export default function ForgotPasswordPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
-      });
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-      };
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong.");
+      const result = await requestPasswordReset(email.trim().toLowerCase());
+      if (!result.ok) {
+        setError(result.message);
         setLoading(false);
         return;
       }

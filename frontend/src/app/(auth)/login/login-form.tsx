@@ -5,6 +5,7 @@ import * as React from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+import { registerAccount } from "@/lib/api/auth-client";
 import { LoadingButton } from "@/components/forms/loading-button";
 import { useMounted } from "@/hooks/use-mounted";
 import {
@@ -241,29 +242,17 @@ export function LoginForm({ initialSearch = "" }: LoginFormProps) {
     setSuccessMessage(null);
     setLoadingRegister(true);
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: registerName.trim(),
-          email: registerEmail.trim().toLowerCase(),
-          password: registerPassword,
-        }),
+      const result = await registerAccount({
+        name: registerName.trim(),
+        email: registerEmail.trim().toLowerCase(),
+        password: registerPassword,
       });
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        message?: string;
-        error?: string;
-      };
-      if (!res.ok) {
-        setError(data.error ?? "Could not create account.");
+      if (!result.ok) {
+        setError(result.message);
         setLoadingRegister(false);
         return;
       }
-      setSuccessMessage(
-        data.message ??
-          "Check your inbox to verify your email before signing in.",
-      );
+      setSuccessMessage(result.message);
       setRegisterPassword("");
       setLoadingRegister(false);
     } catch {

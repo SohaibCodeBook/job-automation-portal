@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { resetPassword } from "@/lib/api/auth-client";
 import { LoadingButton } from "@/components/forms/loading-button";
 import {
   Card,
@@ -41,17 +42,9 @@ function ResetPasswordForm() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-      };
-      if (!res.ok) {
-        setError(data.error ?? "Could not reset password.");
+      const result = await resetPassword({ token, password });
+      if (!result.ok) {
+        setError(result.message);
         setLoading(false);
         return;
       }

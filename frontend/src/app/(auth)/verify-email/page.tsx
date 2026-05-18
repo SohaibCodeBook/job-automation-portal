@@ -4,6 +4,7 @@ import Link from "next/link";
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 
+import { confirmEmailAddress } from "@/lib/api/auth-client";
 import {
   Card,
   CardContent,
@@ -32,23 +33,15 @@ function VerifyEmailContent() {
     let cancelled = false;
 
     async function confirm() {
+      const verificationToken = token;
+      if (!verificationToken) return;
       try {
-        const res = await fetch("/api/auth/confirm-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
-        const data = (await res.json().catch(() => ({}))) as {
-          ok?: boolean;
-          error?: string;
-        };
+        const result = await confirmEmailAddress(verificationToken);
         if (cancelled) return;
 
-        if (!res.ok) {
+        if (!result.ok) {
           setStatus("error");
-          setMessage(
-            data.error ?? "Invalid or expired verification link.",
-          );
+          setMessage(result.message);
           return;
         }
 
