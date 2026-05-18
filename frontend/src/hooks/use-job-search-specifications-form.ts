@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 
@@ -16,6 +17,7 @@ import {
 } from "@/types/job-search-form";
 
 export function useJobSearchSpecificationsForm() {
+  const { data: session, status: sessionStatus } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -30,10 +32,22 @@ export function useJobSearchSpecificationsForm() {
     setIsSubmitting(true);
     setSubmitMessage(null);
     setSubmitError(null);
+
+    const accessToken = session?.accessToken;
+    if (sessionStatus === "loading") {
+      setSubmitError("Session is still loading. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!accessToken) {
+      setSubmitError("Authentication required. Sign in and try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const payload = serializeJobApplicationForApi(values);
-      console.log("[job-application] request payload", payload);
-      const result = await submitJobApplication(payload);
+      const result = await submitJobApplication(payload, accessToken);
       setSubmitMessage(result.message ?? "Job application created successfully.");
       form.reset(defaultJobSearchFormValues);
     } catch (error) {

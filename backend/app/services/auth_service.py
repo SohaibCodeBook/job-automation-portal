@@ -198,17 +198,19 @@ class AuthService:
                     code="oauth_create_failed",
                 ) from exc
 
+            name = _display_name(
+                {
+                    "name": profile.get("name"),
+                    "full_name": profile.get("name"),
+                },
+                email,
+            )
             return {
                 "user_id": str(user_id),
                 "email": email,
-                "name": _display_name(
-                    {
-                        "name": profile.get("name"),
-                        "full_name": profile.get("name"),
-                    },
-                    email,
-                ),
+                "name": name,
                 "created": True,
+                "access_token": create_access_token(user_id=user_id, email=email),
             }
 
         if intent == "signin":
@@ -219,11 +221,15 @@ class AuthService:
                 )
             row = await self._users.get_user_profile(existing_id)
             meta = row.raw_user_meta_data if row else None
+            name = _display_name(meta, email)
             return {
                 "user_id": str(existing_id),
                 "email": email,
-                "name": _display_name(meta, email),
+                "name": name,
                 "created": False,
+                "access_token": create_access_token(
+                    user_id=existing_id, email=email
+                ),
             }
 
         raise AuthError("Invalid Google OAuth intent.", code="validation_error")

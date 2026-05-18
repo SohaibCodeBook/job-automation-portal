@@ -127,6 +127,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.sub = sync.userId;
           token.email = sync.email;
           token.name = sync.name;
+          token.accessToken = sync.accessToken;
         }
       }
 

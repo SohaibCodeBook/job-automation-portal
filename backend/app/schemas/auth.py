@@ -78,3 +78,4 @@ class GoogleSyncResponse(BaseModel):
     email: str
     name: str
     created: bool
+    access_token: str
