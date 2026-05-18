@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { LoadingButton } from "@/components/forms/loading-button";
+import { useMounted } from "@/hooks/use-mounted";
 import {
   Card,
   CardContent,
@@ -12,6 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function safeNextParam(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
@@ -55,37 +59,119 @@ async function setGoogleIntent(intent: "signin" | "signup") {
   }
 }
 
-export function LoginForm() {
-  const searchParams = useSearchParams();
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="relative py-2">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t border-border" />
+      </div>
+      <div className="relative flex justify-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="bg-card px-2">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+function loginUrlError(searchParams: URLSearchParams): string | null {
+  const err = searchParams.get("error");
+  const code = searchParams.get("code");
+
+  if (err === "CredentialsSignin") {
+    if (code === "google_only") {
+      return "This email uses Google sign-in. Use Sign in with Google instead.";
+    }
+    if (code === "unverified" || code === "email_not_verified") {
+      return "Please verify your email before signing in.";
+    }
+    return "Invalid email or password. If you recently signed up, check your inbox to verify your email.";
+  }
+
+  if (searchParams.get("unverified") === "true") {
+    return "Please verify your email before signing in.";
+  }
+
+  if (err === "no_account") {
+    return "No account for this Google user. Use Create New Account first.";
+  }
+  if (err === "account_exists") {
+    return "This Google account is already registered. Use Sign in with Google.";
+  }
+  if (err === "oauth_email") {
+    return "Google did not return an email. Try another Google account.";
+  }
+  if (err === "oauth_create_failed") {
+    return "Could not create the account. Please try again.";
+  }
+  if (err === "AccessDenied" || err === "Configuration") {
+    return "Sign-in was cancelled or denied. Please try again.";
+  }
+  if (err) {
+    return "Something went wrong. Please try again.";
+  }
+  return null;
+}
+
+function loginUrlBanner(searchParams: URLSearchParams): string | null {
+  if (searchParams.get("verified") === "true") {
+    return "Your email has been verified. You can sign in now.";
+  }
+  if (searchParams.get("reset") === "true") {
+    return "Your password has been updated. Sign in with your new password.";
+  }
+  return null;
+}
+
+function useClientSearch(initialSearch: string): URLSearchParams {
+  const mounted = useMounted();
+  const liveSearch = React.useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") return () => {};
+      window.addEventListener("popstate", onStoreChange);
+      return () => window.removeEventListener("popstate", onStoreChange);
+    },
+    () => window.location.search,
+    () => initialSearch,
+  );
+  const searchString = mounted ? liveSearch : initialSearch;
+  return React.useMemo(
+    () => new URLSearchParams(searchString.replace(/^\?/, "")),
+    [searchString],
+  );
+}
+
+type LoginFormProps = {
+  /** Serialized query from the server page, e.g. `?error=...&code=...` */
+  initialSearch?: string;
+};
+
+export function LoginForm({ initialSearch = "" }: LoginFormProps) {
+  const router = useRouter();
+  const searchParams = useClientSearch(initialSearch);
   const next = safeNextParam(searchParams.get("next"));
 
   const [error, setError] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(
+    null,
+  );
   const [loadingSignIn, setLoadingSignIn] = React.useState(false);
   const [loadingCreate, setLoadingCreate] = React.useState(false);
+  const [loadingEmailSignIn, setLoadingEmailSignIn] = React.useState(false);
+  const [loadingRegister, setLoadingRegister] = React.useState(false);
+  const [loginEmail, setLoginEmail] = React.useState("");
+  const [loginPassword, setLoginPassword] = React.useState("");
+  const [registerName, setRegisterName] = React.useState("");
+  const [registerEmail, setRegisterEmail] = React.useState("");
+  const [registerPassword, setRegisterPassword] = React.useState("");
+  const [screen, setScreen] = React.useState<"signin" | "signup">("signin");
 
-  React.useEffect(() => {
-    const err = searchParams.get("error");
-    if (err === "no_account") {
-      setError(
-        "No account for this Google user. Use Create New Account first.",
-      );
-    } else if (err === "account_exists") {
-      setError(
-        "This Google account is already registered. Use Sign in with Google.",
-      );
-    } else if (err === "oauth_email") {
-      setError("Google did not return an email. Try another Google account.");
-    } else if (err === "oauth_create_failed") {
-      setError("Could not create the account. Please try again.");
-    } else if (err === "AccessDenied" || err === "Configuration") {
-      setError("Sign-in was cancelled or denied. Please try again.");
-    } else if (err) {
-      setError("Something went wrong. Please try again.");
-    }
-  }, [searchParams]);
+  const urlError = loginUrlError(searchParams);
+  const urlBanner = loginUrlBanner(searchParams);
+  const displayError = error ?? urlError;
+  const displayBanner = successMessage ?? urlBanner;
 
   async function onSignInWithGoogle() {
     setError(null);
+    setSuccessMessage(null);
     setLoadingSignIn(true);
     try {
       await setGoogleIntent("signin");
@@ -98,6 +184,7 @@ export function LoginForm() {
 
   async function onCreateNewAccount() {
     setError(null);
+    setSuccessMessage(null);
     setLoadingCreate(true);
     try {
       await setGoogleIntent("signup");
@@ -108,43 +195,278 @@ export function LoginForm() {
     }
   }
 
+  async function onEmailSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    setLoadingEmailSignIn(true);
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: loginEmail.trim().toLowerCase(),
+        password: loginPassword,
+        callbackUrl: next,
+      });
+
+      // NextAuth may return ok: true (HTTP 200) while error is set on failed credentials.
+      const signInFailed = Boolean(res?.error) || res?.ok === false;
+      if (signInFailed) {
+        const code = res?.code;
+        if (code === "google_only") {
+          setError(
+            "This email uses Google sign-in. Use Sign in with Google instead.",
+          );
+        } else if (code === "unverified" || code === "email_not_verified") {
+          setError("Please verify your email before signing in.");
+        } else {
+          setError(
+            "Invalid email or password. If you recently signed up, check your inbox to verify your email.",
+          );
+        }
+        return;
+      }
+
+      router.push(res?.url ?? next);
+      router.refresh();
+    } catch {
+      setError("Could not sign in.");
+    } finally {
+      setLoadingEmailSignIn(false);
+    }
+  }
+
+  async function onCreateAccount(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    setLoadingRegister(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: registerName.trim(),
+          email: registerEmail.trim().toLowerCase(),
+          password: registerPassword,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+        error?: string;
+      };
+      if (!res.ok) {
+        setError(data.error ?? "Could not create account.");
+        setLoadingRegister(false);
+        return;
+      }
+      setSuccessMessage(
+        data.message ??
+          "Check your inbox to verify your email before signing in.",
+      );
+      setRegisterPassword("");
+      setLoadingRegister(false);
+    } catch {
+      setError("Something went wrong.");
+      setLoadingRegister(false);
+    }
+  }
+
+  const screenError = screen === "signin" ? displayError : error;
+  const signupSuccess = screen === "signup" ? successMessage : null;
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
+        <CardTitle>
+          {screen === "signin" ? "Sign in" : "Create New Account"}
+        </CardTitle>
         <CardDescription>
-          Google only — sign in with an existing account or create one with the
-          same Google OAuth flow.
+          {screen === "signin"
+            ? "Sign in with Google or email. New accounts must verify email before signing in."
+            : "Create an account with Google or email. You must verify your email before signing in."}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <LoadingButton
-          type="button"
-          variant="default"
-          className="w-full"
-          loading={loadingSignIn}
-          loadingText="Redirecting…"
-          onClick={() => void onSignInWithGoogle()}
-        >
-          <GoogleIcon className="size-4" />
-          Sign in with Google
-        </LoadingButton>
-        <LoadingButton
-          type="button"
-          variant="outline"
-          className="w-full"
-          loading={loadingCreate}
-          loadingText="Redirecting…"
-          onClick={() => void onCreateNewAccount()}
-        >
-          <GoogleIcon className="size-4" />
-          Create New Account
-        </LoadingButton>
-        {error ? (
-          <p className="text-center text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        ) : null}
+      <CardContent className="space-y-6">
+        {screen === "signin" ? (
+          <>
+            {displayBanner ? (
+              <p
+                className="rounded-md border border-border bg-muted/50 px-3 py-2 text-center text-sm text-foreground"
+                role="status"
+              >
+                {displayBanner}
+              </p>
+            ) : null}
+
+            <LoadingButton
+              type="button"
+              variant="default"
+              className="w-full"
+              loading={loadingSignIn}
+              loadingText="Redirecting…"
+              onClick={() => void onSignInWithGoogle()}
+            >
+              <GoogleIcon className="size-4" />
+              Continue with Google
+            </LoadingButton>
+
+            <SectionDivider label="OR EMAIL" />
+
+            <form className="space-y-3" onSubmit={(e) => void onEmailSignIn(e)}>
+            <div className="space-y-2">
+              <Label htmlFor="login-email">Email</Label>
+              <Input
+                id="login-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="login-password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <Input
+                id="login-password"
+                type="password"
+                autoComplete="current-password"
+                required
+                minLength={8}
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+              />
+            </div>
+            <LoadingButton
+              type="submit"
+              variant="secondary"
+              className="w-full"
+              loading={loadingEmailSignIn}
+              loadingText="Signing in…"
+            >
+              Sign in with Email
+            </LoadingButton>
+          </form>
+
+            {screenError ? (
+              <p className="text-center text-sm text-destructive" role="alert">
+                {screenError}
+              </p>
+            ) : null}
+
+            <p className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+                onClick={() => setScreen("signup")}
+              >
+                Join now
+              </button>
+            </p>
+          </>
+        ) : (
+          <>
+            {signupSuccess ? (
+              <p
+                className="rounded-md border border-border bg-muted/50 px-3 py-2 text-center text-sm text-foreground"
+                role="status"
+              >
+                {signupSuccess}
+              </p>
+            ) : null}
+
+            <LoadingButton
+              type="button"
+              variant="default"
+              className="w-full"
+              loading={loadingCreate}
+              loadingText="Redirecting…"
+              onClick={() => void onCreateNewAccount()}
+            >
+              <GoogleIcon className="size-4" />
+              Continue with Google
+            </LoadingButton>
+
+            <SectionDivider label="OR EMAIL" />
+
+            <form className="space-y-3" onSubmit={(e) => void onCreateAccount(e)}>
+            <div className="space-y-2">
+              <Label htmlFor="register-name">Name</Label>
+              <Input
+                id="register-name"
+                type="text"
+                autoComplete="name"
+                required
+                maxLength={120}
+                value={registerName}
+                onChange={(e) => setRegisterName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="register-email">Email</Label>
+              <Input
+                id="register-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={registerEmail}
+                onChange={(e) => setRegisterEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="register-password">Password</Label>
+              <Input
+                id="register-password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={128}
+                value={registerPassword}
+                onChange={(e) => setRegisterPassword(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                At least 8 characters
+              </p>
+            </div>
+            <LoadingButton
+              type="submit"
+              variant="outline"
+              className="w-full"
+              loading={loadingRegister}
+              loadingText="Creating…"
+            >
+              Create account
+            </LoadingButton>
+          </form>
+
+            {screenError ? (
+              <p className="text-center text-sm text-destructive" role="alert">
+                {screenError}
+              </p>
+            ) : null}
+
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+                onClick={() => setScreen("signin")}
+              >
+                Sign in
+              </button>
+            </p>
+          </>
+        )}
       </CardContent>
     </Card>
   );

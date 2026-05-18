@@ -17,6 +17,7 @@ function isPublicPath(pathname: string) {
     pathname === "/signup" ||
     pathname === "/forgot-password" ||
     pathname === "/reset-password" ||
+    pathname === "/verify-email" ||
     pathname === "/auth/auth-code-error"
   );
 }

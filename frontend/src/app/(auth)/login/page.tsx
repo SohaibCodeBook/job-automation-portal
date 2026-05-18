@@ -1,21 +1,29 @@
-import { Suspense } from "react";
-
-import { Card, CardContent } from "@/components/ui/card";
-
 import { LoginForm } from "./login-form";
 
-export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <Card className="w-full max-w-md">
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Loading…
-          </CardContent>
-        </Card>
+type LoginPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function serializeSearchParams(
+  params: Record<string, string | string[] | undefined>,
+): string {
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") {
+      qs.set(key, value);
+    } else if (Array.isArray(value)) {
+      for (const item of value) {
+        qs.append(key, item);
       }
-    >
-      <LoginForm />
-    </Suspense>
-  );
+    }
+  }
+  const serialized = qs.toString();
+  return serialized ? `?${serialized}` : "";
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolved = await searchParams;
+  const initialSearch = serializeSearchParams(resolved);
+
+  return <LoginForm initialSearch={initialSearch} />;
 }
