@@ -26,6 +26,7 @@ class JobApplicationListItem(BaseModel):
     desired_job_title_1: str | None = None
     remote: bool | None = None
     hybrid: bool | None = None
+    onsite: bool | None = None
     job_type: str | None = None
     created_at: datetime | None = None
 

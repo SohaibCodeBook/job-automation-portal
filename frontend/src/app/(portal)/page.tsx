@@ -29,6 +29,7 @@ import {
 import {
   HINT_DESIRED_JOB_TITLES,
   HINT_HYBRID_TOGGLE,
+  HINT_ONSITE_TOGGLE,
   HINT_MUST_INCLUDE,
   HINT_OMIT_WORDS,
   HINT_REMOTE_TOGGLE,
@@ -64,13 +65,15 @@ export default function Home() {
 
   const remoteEnabled = useWatch({ control, name: "remote" });
   const hybridEnabled = useWatch({ control, name: "hybrid" });
+  const onsiteEnabled = useWatch({ control, name: "onsite" });
   const allIndustries = useWatch({ control, name: "allIndustries" });
+  const locationModeEnabled = hybridEnabled || onsiteEnabled;
 
   React.useEffect(() => {
-    if (!remoteEnabled && !hybridEnabled) return;
+    if (!remoteEnabled && !hybridEnabled && !onsiteEnabled) return;
     if (errors.remote?.message !== validationMessages.workModeRequired) return;
     clearErrors("remote");
-  }, [remoteEnabled, hybridEnabled, errors.remote?.message, clearErrors]);
+  }, [remoteEnabled, hybridEnabled, onsiteEnabled, errors.remote?.message, clearErrors]);
 
   const visibleSteps = React.useMemo(
     () =>
@@ -173,10 +176,14 @@ export default function Home() {
         const workModeError =
           !remoteEnabled &&
           !hybridEnabled &&
+          !onsiteEnabled &&
           errors.remote?.message === validationMessages.workModeRequired;
+        const workModeErrorClass = workModeError
+          ? "border-2 border-destructive bg-background/80 shadow-sm ring-1 ring-destructive/20"
+          : undefined;
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Controller
                 control={control}
                 name="remote"
@@ -186,16 +193,13 @@ export default function Home() {
                     label="Remote"
                     labelHint={HINT_REMOTE_TOGGLE}
                     checked={field.value}
-                    disabled={hybridEnabled}
-                    className={
-                      workModeError
-                        ? "border-2 border-destructive bg-background/80 shadow-sm ring-1 ring-destructive/20"
-                        : undefined
-                    }
+                    disabled={locationModeEnabled}
+                    className={workModeErrorClass}
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
                       if (checked) {
                         setValue("hybrid", false);
+                        setValue("onsite", false);
                         setValue("selectedCities", []);
                         setValue("selectedStates", []);
                       } else {
@@ -203,7 +207,7 @@ export default function Home() {
                         setValue("payRangeFilter", {});
                       }
                     }}
-                    description="Include fully remote jobs. Turn off Hybrid to use this."
+                    description="Include fully remote jobs. Turn off Hybrid and Onsite to use this."
                   />
                 )}
               />
@@ -216,16 +220,13 @@ export default function Home() {
                     label="Hybrid"
                     labelHint={HINT_HYBRID_TOGGLE}
                     checked={field.value}
-                    disabled={remoteEnabled}
-                    className={
-                      workModeError
-                        ? "border-2 border-destructive bg-background/80 shadow-sm ring-1 ring-destructive/20"
-                        : undefined
-                    }
+                    disabled={remoteEnabled || onsiteEnabled}
+                    className={workModeErrorClass}
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
                       if (checked) {
                         setValue("remote", false);
+                        setValue("onsite", false);
                         setValue("selectedRegions", []);
                         setValue("payRangeFilter", {});
                       } else {
@@ -233,7 +234,34 @@ export default function Home() {
                         setValue("selectedStates", []);
                       }
                     }}
-                    description="Include hybrid work options. Turn off Remote to use this."
+                    description="Include hybrid work options. Turn off Remote and Onsite to use this."
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="onsite"
+                render={({ field }) => (
+                  <ToggleSwitchField
+                    id="onsite"
+                    label="Onsite"
+                    labelHint={HINT_ONSITE_TOGGLE}
+                    checked={field.value}
+                    disabled={remoteEnabled || hybridEnabled}
+                    className={workModeErrorClass}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      if (checked) {
+                        setValue("remote", false);
+                        setValue("hybrid", false);
+                        setValue("selectedRegions", []);
+                        setValue("payRangeFilter", {});
+                      } else {
+                        setValue("selectedCities", []);
+                        setValue("selectedStates", []);
+                      }
+                    }}
+                    description="Include onsite work options. Turn off Remote and Hybrid to use this."
                   />
                 )}
               />
@@ -260,6 +288,15 @@ export default function Home() {
             ) : null}
             {hybridEnabled ? (
               <HybridLocationPreferencesPanel
+                title="Hybrid Location Preferences"
+                setValue={setValue}
+                watch={watch}
+                errors={errors}
+              />
+            ) : null}
+            {onsiteEnabled ? (
+              <HybridLocationPreferencesPanel
+                title="Onsite Location Preferences"
                 setValue={setValue}
                 watch={watch}
                 errors={errors}

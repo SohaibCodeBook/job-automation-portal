@@ -43,6 +43,7 @@ def submission_to_row(body: JobApplicationSubmissionRequest) -> dict[str, Any]:
         "industry_names_from_naics": _join_semicolon(body.industry_names_from_naics),
         "remote": body.remote,
         "hybrid": body.hybrid,
+        "onsite": body.onsite,
         "job_type": body.job_type,
         "experience_levels": ";".join(body.experience_levels),
         "omit_words": _join_semicolon(body.omit_words),
@@ -65,6 +66,7 @@ def _to_list_item(app: Any) -> dict[str, Any]:
         "desired_job_title_1": app.desired_job_title_1,
         "remote": app.remote,
         "hybrid": app.hybrid,
+        "onsite": app.onsite,
         "job_type": app.job_type,
         "created_at": app.created_at,
     }

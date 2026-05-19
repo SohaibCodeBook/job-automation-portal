@@ -37,6 +37,7 @@ export const jobSearchFormSchema = z
     industryNamesFromNaics: optionalStringArray,
     remote: z.boolean().default(false),
     hybrid: z.boolean().default(false),
+    onsite: z.boolean().default(false),
     employmentType: requiredStringArray.superRefine((arr, ctx) => {
       const allowed = new Set<string>(
         EMPLOYMENT_TYPE_OPTIONS.map((option) => option.value),
@@ -105,7 +106,7 @@ export const jobSearchFormSchema = z
       });
     }
 
-    if (!values.remote && !values.hybrid) {
+    if (!values.remote && !values.hybrid && !values.onsite) {
       ctx.addIssue({
         code: "custom",
         message: validationMessages.workModeRequired,
@@ -121,6 +122,18 @@ export const jobSearchFormSchema = z
       ctx.addIssue({
         code: "custom",
         message: validationMessages.hybridLocationRequired,
+        path: ["selectedCities"],
+      });
+    }
+
+    if (
+      values.onsite &&
+      hybridCities.length === 0 &&
+      hybridStates.length === 0
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: validationMessages.onsiteLocationRequired,
         path: ["selectedCities"],
       });
     }

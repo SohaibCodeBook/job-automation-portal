@@ -8,9 +8,11 @@ export const validationMessages = {
   jobTitleTagsMaxLength:
     "Combined tags must be at most 200 characters (API limit).",
   workModeRequired:
-    "Please select at least one work mode — Remote or Hybrid.",
+    "Please select at least one work mode — Remote, Hybrid, or Onsite.",
   hybridLocationRequired:
     "Select at least one city or one state/province when Hybrid is enabled.",
+  onsiteLocationRequired:
+    "Select at least one city or one state/province when Onsite is enabled.",
 } as const;
 
 export const requiredText = z.string().trim().min(1, validationMessages.required);

@@ -34,10 +34,11 @@ export const JOB_SEARCH_WIZARD_STEPS: WizardStep[] = [
     id: "work-preferences",
     title: "Step 3 — Work Preferences",
     description:
-      "Choose remote/hybrid preferences, employment type, and experience levels.",
+      "Choose remote, hybrid, or onsite preferences, employment type, and experience levels.",
     fields: [
       "remote",
       "hybrid",
+      "onsite",
       "selectedRegions",
       "payRangeFilter",
       "employmentType",

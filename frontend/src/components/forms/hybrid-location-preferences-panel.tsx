@@ -17,6 +17,7 @@ import type { JobSearchFormValues } from "@/types/job-search-form";
 const HYBRID_LOCATION_LIMIT = 3 as const;
 
 type HybridLocationPreferencesPanelProps = {
+  title?: string;
   setValue: UseFormSetValue<JobSearchFormValues>;
   watch: UseFormWatch<JobSearchFormValues>;
   errors: FieldErrors<JobSearchFormValues>;
@@ -32,6 +33,7 @@ function optionForName(
 }
 
 export function HybridLocationPreferencesPanel({
+  title = "Hybrid Location Preferences",
   setValue,
   watch,
   errors,
@@ -267,7 +269,7 @@ export function HybridLocationPreferencesPanel({
           <span className="text-base leading-none" aria-hidden>
             🗺️
           </span>
-          <p className="text-sm font-semibold">Hybrid Location Preferences</p>
+          <p className="text-sm font-semibold">{title}</p>
         </div>
         <span className="text-xs tabular-nums text-muted-foreground">
           {activeKind === null

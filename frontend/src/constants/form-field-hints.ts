@@ -9,6 +9,9 @@ export const HINT_REMOTE_TOGGLE =
 export const HINT_HYBRID_TOGGLE =
   "Enable this if you want hybrid jobs. For Hybrid jobs, choose either preferred cities or preferred states/provinces. You can select up to 3 locations.";
 
+export const HINT_ONSITE_TOGGLE =
+  "Enable this if you want onsite jobs. For Onsite jobs, choose either preferred cities or preferred states/provinces. You can select up to 3 locations.";
+
 export const HINT_DESIRED_JOB_TITLES =
   "Add your target job titles in order of priority. Type a title and press ENTER to add multiple titles. For best matching results, use job titles that closely match the titles listed on your resume.";
 

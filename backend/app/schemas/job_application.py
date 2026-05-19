@@ -75,6 +75,7 @@ class JobApplicationSubmissionRequest(BaseModel):
 
     remote: bool = Field(default=False, description="Prefer or allow remote roles.")
     hybrid: bool = Field(default=False, description="Prefer or allow hybrid roles.")
+    onsite: bool = Field(default=False, description="Prefer or allow onsite roles.")
     job_type: str = Field(
         ...,
         min_length=1,
