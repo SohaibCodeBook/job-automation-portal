@@ -4,6 +4,7 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
 
+from app.lib.country_currencies import currency_for_country_name, is_known_country_name
 from app.schemas.common import LIMIT_JOBS_FIXED, NonEmptyStr, NonEmptyStrList
 
 _ALLOWED_JOB_TYPES: Final[frozenset[str]] = frozenset(
@@ -15,22 +16,6 @@ _ALLOWED_JOB_TYPES: Final[frozenset[str]] = frozenset(
         "Volunteer",
     },
 )
-
-_REGION_TO_CURRENCY: Final[dict[str, str]] = {
-    "United States": "USD",
-    "United Kingdom": "GBP",
-    "Australia": "AUD",
-    "Canada": "CAD",
-    "Germany": "EUR",
-    "Netherlands": "EUR",
-    "UAE": "AED",
-    "India": "INR",
-    "Singapore": "SGD",
-    "Pakistan": "PKR",
-    "Ireland": "EUR",
-    "France": "EUR",
-}
-
 
 class RegionPayRange(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -182,9 +167,9 @@ class JobApplicationSubmissionRequest(BaseModel):
         if len(normalized) > 3:
             raise ValueError("selected_regions must contain at most 3 regions.")
         deduped = list(dict.fromkeys(normalized))
-        unknown = [r for r in deduped if r not in _REGION_TO_CURRENCY]
+        unknown = [r for r in deduped if not is_known_country_name(r)]
         if unknown:
-            raise ValueError(f"Invalid region(s): {unknown}")
+            raise ValueError(f"Invalid country name(s): {unknown}")
         return deduped
 
     @field_validator(
@@ -220,7 +205,9 @@ class JobApplicationSubmissionRequest(BaseModel):
                 "pay_range_filter keys must exactly match selected_regions.",
             )
         for region in self.selected_regions:
-            expected = _REGION_TO_CURRENCY[region]
+            expected = currency_for_country_name(region)
+            if expected is None:
+                raise ValueError(f"Unknown country name: {region!r}")
             actual = self.pay_range_filter[region].currency
             if actual != expected:
                 raise ValueError(

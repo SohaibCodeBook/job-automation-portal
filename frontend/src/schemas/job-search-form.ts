@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { REGION_TO_CURRENCY } from "@/constants/regions";
+import { getCurrencyForCountryName } from "@/lib/locations";
 import { EMPLOYMENT_TYPE_OPTIONS } from "@/constants/job-search-form";
 import {
   optionalStringArray,
@@ -23,10 +23,6 @@ const payRangeEntrySchema = z.object({
   max: z.number().int().min(1),
   currency: z.string().min(1),
 });
-
-const allowedRemoteRegions = new Set<string>(
-  Object.keys(REGION_TO_CURRENCY),
-);
 
 export const jobSearchFormSchema = z
   .object({
@@ -173,10 +169,10 @@ export const jobSearchFormSchema = z
         });
       }
       seen.add(region);
-      if (!allowedRemoteRegions.has(region)) {
+      if (!getCurrencyForCountryName(region)) {
         ctx.addIssue({
           code: "custom",
-          message: "Invalid region.",
+          message: "Invalid country.",
           path: ["selectedRegions", index],
         });
       }
@@ -200,7 +196,7 @@ export const jobSearchFormSchema = z
     for (const region of values.selectedRegions) {
       const entry = values.payRangeFilter[region];
       if (!entry) continue;
-      const expected = REGION_TO_CURRENCY[region as keyof typeof REGION_TO_CURRENCY];
+      const expected = getCurrencyForCountryName(region);
       if (expected && entry.currency !== expected) {
         ctx.addIssue({
           code: "custom",

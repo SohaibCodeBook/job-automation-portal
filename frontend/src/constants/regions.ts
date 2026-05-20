@@ -1,38 +1,51 @@
-/**
- * Remote salary regions — labels must match backend exactly.
- */
-export const REMOTE_REGION_DEFINITIONS = [
-  { label: "United States", value: "United States", flag: "🇺🇸" },
-  { label: "United Kingdom", value: "United Kingdom", flag: "🇬🇧" },
-  { label: "Australia", value: "Australia", flag: "🇦🇺" },
-  { label: "Canada", value: "Canada", flag: "🇨🇦" },
-  { label: "Germany", value: "Germany", flag: "🇩🇪" },
-  { label: "Netherlands", value: "Netherlands", flag: "🇳🇱" },
-  { label: "UAE", value: "UAE", flag: "🇦🇪" },
-  { label: "India", value: "India", flag: "🇮🇳" },
-  { label: "Singapore", value: "Singapore", flag: "🇸🇬" },
-  { label: "Pakistan", value: "Pakistan", flag: "🇵🇰" },
-  { label: "Ireland", value: "Ireland", flag: "🇮🇪" },
-  { label: "France", value: "France", flag: "🇫🇷" },
-] as const;
+import { Country } from "country-state-city";
 
-export type RemoteRegionValue = (typeof REMOTE_REGION_DEFINITIONS)[number]["value"];
+import {
+  getAllCountries,
+  getCurrencyForCountryName,
+} from "@/lib/locations";
 
-/** ISO 4217 — must stay aligned with backend region→currency mapping. */
-export const REGION_TO_CURRENCY: Record<RemoteRegionValue, string> = {
-  "United States": "USD",
-  "United Kingdom": "GBP",
-  Australia: "AUD",
-  Canada: "CAD",
-  Germany: "EUR",
-  Netherlands: "EUR",
-  UAE: "AED",
-  India: "INR",
-  Singapore: "SGD",
-  Pakistan: "PKR",
-  Ireland: "EUR",
-  France: "EUR",
+export type RemoteRegionPickerOption = {
+  regionValue: string;
+  displayLabel: string;
+  libraryName: string;
+  flag: string;
+  isoCode: string;
+  currency: string;
 };
+
+let cachedPickerOptions: RemoteRegionPickerOption[] | null = null;
+
+/** All countries available for remote salary region selection. */
+export function getRemoteRegionPickerOptions(): RemoteRegionPickerOption[] {
+  if (cachedPickerOptions) return cachedPickerOptions;
+
+  cachedPickerOptions = getAllCountries().map((country) => {
+    const lib = Country.getCountryByCode(country.code);
+    const currency =
+      getCurrencyForCountryName(country.name) ??
+      lib?.currency.trim().toUpperCase() ??
+      "USD";
+    return {
+      regionValue: country.name,
+      displayLabel: country.name,
+      libraryName: country.name,
+      flag: lib?.flag ?? "🌐",
+      isoCode: country.code,
+      currency,
+    };
+  });
+
+  return cachedPickerOptions;
+}
+
+export function getRemoteRegionPickerOption(
+  regionValue: string,
+): RemoteRegionPickerOption | undefined {
+  return getRemoteRegionPickerOptions().find(
+    (opt) => opt.regionValue === regionValue,
+  );
+}
 
 const CURRENCY_DISPLAY: Record<string, { symbol: string; compact: string }> = {
   USD: { symbol: "$", compact: "$" },
@@ -44,6 +57,30 @@ const CURRENCY_DISPLAY: Record<string, { symbol: string; compact: string }> = {
   INR: { symbol: "₹", compact: "₹" },
   SGD: { symbol: "S$", compact: "S$" },
   PKR: { symbol: "₨", compact: "₨" },
+  JPY: { symbol: "¥", compact: "¥" },
+  CHF: { symbol: "Fr", compact: "CHF " },
+  CNY: { symbol: "¥", compact: "¥" },
+  BRL: { symbol: "R$", compact: "R$" },
+  MXN: { symbol: "$", compact: "MX$" },
+  ZAR: { symbol: "R", compact: "R" },
+  KRW: { symbol: "₩", compact: "₩" },
+  SEK: { symbol: "kr", compact: "kr" },
+  NOK: { symbol: "kr", compact: "kr" },
+  DKK: { symbol: "kr", compact: "kr" },
+  PLN: { symbol: "zł", compact: "zł" },
+  TRY: { symbol: "₺", compact: "₺" },
+  THB: { symbol: "฿", compact: "฿" },
+  IDR: { symbol: "Rp", compact: "Rp" },
+  PHP: { symbol: "₱", compact: "₱" },
+  VND: { symbol: "₫", compact: "₫" },
+  NZD: { symbol: "NZ$", compact: "NZ$" },
+  HKD: { symbol: "HK$", compact: "HK$" },
+  TWD: { symbol: "NT$", compact: "NT$" },
+  SAR: { symbol: "﷼", compact: "SAR " },
+  ILS: { symbol: "₪", compact: "₪" },
+  ARS: { symbol: "$", compact: "AR$" },
+  CLP: { symbol: "$", compact: "CL$" },
+  COP: { symbol: "$", compact: "CO$" },
 };
 
 export function currencyBadgeLabel(currencyCode: string): string {
@@ -68,9 +105,9 @@ export type RegionPayRangeEntry = {
 };
 
 export function getCurrencyForRegion(region: string): string {
-  const code = REGION_TO_CURRENCY[region as RemoteRegionValue];
+  const code = getCurrencyForCountryName(region);
   if (!code) {
-    throw new Error(`Unknown region for currency mapping: ${region}`);
+    throw new Error(`Unknown country for currency mapping: ${region}`);
   }
   return code;
 }
@@ -87,11 +124,11 @@ export function formatCompactSalary(amount: number, currencyCode: string): strin
   return `${disp}${amount}`;
 }
 
-export function defaultPayRangeForRegion(region: RemoteRegionValue): RegionPayRangeEntry {
+export function defaultPayRangeForRegion(region: string): RegionPayRangeEntry {
   return {
     min: DEFAULT_REGION_PAY_MIN,
     max: DEFAULT_REGION_PAY_MAX,
-    currency: REGION_TO_CURRENCY[region],
+    currency: getCurrencyForRegion(region),
   };
 }
 
@@ -101,10 +138,9 @@ export function syncPayRangeFilterWithRegions(
 ): Record<string, RegionPayRangeEntry> {
   const next: Record<string, RegionPayRangeEntry> = {};
   for (const region of regions) {
-    if (!(region in REGION_TO_CURRENCY)) continue;
-    const key = region as RemoteRegionValue;
+    const currency = getCurrencyForCountryName(region);
+    if (!currency) continue;
     const existing = previous[region];
-    const currency = REGION_TO_CURRENCY[key];
     if (existing && existing.currency === currency) {
       let min = Math.max(PAY_RANGE_TRACK_MIN, existing.min);
       let max = Math.min(PAY_RANGE_TRACK_MAX, existing.max);
@@ -114,7 +150,7 @@ export function syncPayRangeFilterWithRegions(
       }
       next[region] = { min, max, currency };
     } else {
-      next[region] = defaultPayRangeForRegion(key);
+      next[region] = defaultPayRangeForRegion(region);
     }
   }
   return next;
