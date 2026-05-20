@@ -10,9 +10,9 @@ export const validationMessages = {
   workModeRequired:
     "Please select at least one work mode — Remote, Hybrid, or Onsite.",
   hybridLocationRequired:
-    "Select at least one city or one state/province when Hybrid is enabled.",
+    "Select a country, state/province, and at least one city when Hybrid is enabled.",
   onsiteLocationRequired:
-    "Select at least one city or one state/province when Onsite is enabled.",
+    "Select a country, state/province, and at least one city when Onsite is enabled.",
 } as const;
 
 export const requiredText = z.string().trim().min(1, validationMessages.required);

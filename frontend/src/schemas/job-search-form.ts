@@ -75,14 +75,6 @@ export const jobSearchFormSchema = z
   .superRefine((values, ctx) => {
     const hybridCities = values.selectedCities ?? [];
     const hybridStates = values.selectedStates ?? [];
-    if (hybridCities.length > 0 && hybridStates.length > 0) {
-      ctx.addIssue({
-        code: "custom",
-        message:
-          "Use either cities or states for hybrid locations, not both at once.",
-        path: ["selectedStates"],
-      });
-    }
 
     if (
       !values.allIndustries &&
@@ -113,28 +105,99 @@ export const jobSearchFormSchema = z
       });
     }
 
-    if (
-      values.hybrid &&
-      hybridCities.length === 0 &&
-      hybridStates.length === 0
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: validationMessages.hybridLocationRequired,
-        path: ["selectedCities"],
-      });
+    const validateLocationPay = (country: string | undefined) => {
+      if (!country) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Select a country.",
+          path: ["selectedRegions"],
+        });
+        return;
+      }
+      if (!getCurrencyForCountryName(country)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Invalid country.",
+          path: ["selectedRegions"],
+        });
+        return;
+      }
+      const entry = values.payRangeFilter[country];
+      const expected = getCurrencyForCountryName(country);
+      if (!entry || !expected) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Set a salary range for the selected country.",
+          path: ["payRangeFilter"],
+        });
+        return;
+      }
+      if (entry.currency !== expected) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Currency must be ${expected} for ${country}.`,
+          path: ["payRangeFilter", country, "currency"],
+        });
+      }
+      if (entry.min > entry.max) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Minimum cannot exceed maximum salary for this country.",
+          path: ["payRangeFilter", country, "min"],
+        });
+      }
+    };
+
+    if (values.hybrid) {
+      const country = values.selectedRegions[0];
+      if (!country) {
+        ctx.addIssue({
+          code: "custom",
+          message: validationMessages.hybridLocationRequired,
+          path: ["selectedRegions"],
+        });
+      }
+      if (!hybridStates.length) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Select a state or province.",
+          path: ["selectedStates"],
+        });
+      }
+      if (hybridCities.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          message: validationMessages.hybridLocationRequired,
+          path: ["selectedCities"],
+        });
+      }
+      validateLocationPay(country);
     }
 
-    if (
-      values.onsite &&
-      hybridCities.length === 0 &&
-      hybridStates.length === 0
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: validationMessages.onsiteLocationRequired,
-        path: ["selectedCities"],
-      });
+    if (values.onsite) {
+      const country = values.selectedRegions[0];
+      if (!country) {
+        ctx.addIssue({
+          code: "custom",
+          message: validationMessages.onsiteLocationRequired,
+          path: ["selectedRegions"],
+        });
+      }
+      if (!hybridStates.length) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Select a state or province.",
+          path: ["selectedStates"],
+        });
+      }
+      if (hybridCities.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          message: validationMessages.onsiteLocationRequired,
+          path: ["selectedCities"],
+        });
+      }
+      validateLocationPay(country);
     }
 
     if (!values.remote) {

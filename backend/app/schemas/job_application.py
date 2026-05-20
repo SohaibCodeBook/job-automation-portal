@@ -187,18 +187,10 @@ class JobApplicationSubmissionRequest(BaseModel):
         cleaned = [item.strip() for item in value if isinstance(item, str) and item.strip()]
         return cleaned or None
 
-    @model_validator(mode="after")
-    def validate_region_pay_ranges(self) -> "JobApplicationSubmissionRequest":
-        if not self.remote:
-            if self.selected_regions is not None or self.pay_range_filter is not None:
-                raise ValueError(
-                    "When remote is false, selected_regions and pay_range_filter must be null.",
-                )
-            return self
-
+    def _validate_region_pay_filter(self) -> None:
         if self.selected_regions is None or self.pay_range_filter is None:
             raise ValueError(
-                "Remote roles require selected_regions and pay_range_filter.",
+                "selected_regions and pay_range_filter must both be provided together.",
             )
         if set(self.pay_range_filter.keys()) != set(self.selected_regions):
             raise ValueError(
@@ -213,6 +205,31 @@ class JobApplicationSubmissionRequest(BaseModel):
                 raise ValueError(
                     f"Currency for {region!r} must be {expected!r}, got {actual!r}.",
                 )
+
+    @model_validator(mode="after")
+    def validate_region_pay_ranges(self) -> "JobApplicationSubmissionRequest":
+        has_region_pay = (
+            self.selected_regions is not None or self.pay_range_filter is not None
+        )
+
+        if self.remote:
+            if self.selected_regions is None or self.pay_range_filter is None:
+                raise ValueError(
+                    "Remote roles require selected_regions and pay_range_filter.",
+                )
+            self._validate_region_pay_filter()
+            return self
+
+        if self.hybrid or self.onsite:
+            if has_region_pay:
+                self._validate_region_pay_filter()
+            return self
+
+        if has_region_pay:
+            raise ValueError(
+                "selected_regions and pay_range_filter are only allowed when "
+                "remote, hybrid, or onsite is enabled.",
+            )
         return self
 
 

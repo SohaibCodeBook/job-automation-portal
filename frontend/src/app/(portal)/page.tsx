@@ -233,6 +233,8 @@ export default function Home() {
                       } else {
                         setValue("selectedCities", []);
                         setValue("selectedStates", []);
+                        setValue("selectedRegions", []);
+                        setValue("payRangeFilter", {});
                       }
                     }}
                     description="Include hybrid work options. Turn off Remote and Onsite to use this."
@@ -260,6 +262,8 @@ export default function Home() {
                       } else {
                         setValue("selectedCities", []);
                         setValue("selectedStates", []);
+                        setValue("selectedRegions", []);
+                        setValue("payRangeFilter", {});
                       }
                     }}
                     description="Include onsite work options. Turn off Remote and Hybrid to use this."
