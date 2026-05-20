@@ -55,7 +55,10 @@ export const jobSearchFormSchema = z
     experienceLevels: requiredStringArray,
     omitWords: z.array(z.string().trim().min(1)).default([]),
     mustInclude: z.array(z.string().trim().min(1)).default([]),
-    desiredJobTitle1: requiredStringArray,
+    desiredJobTitle1: requiredStringArray.max(
+      4,
+      "You can add at most 4 target roles.",
+    ),
     selectedCities: z
       .array(z.string().trim().min(1))
       .max(3, "You can add at most 3 cities for hybrid locations.")

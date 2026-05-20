@@ -38,6 +38,7 @@ export function TagInput({
   labelHint,
 }: TagInputProps) {
   const [value, setValue] = React.useState("");
+  const atMaxTags = maxTags != null && tags.length >= maxTags;
 
   const addTag = React.useCallback(() => {
     const normalized = value.trim();
@@ -66,9 +67,13 @@ export function TagInput({
         <Input
           id={id}
           value={value}
-          disabled={disabled}
+          disabled={disabled || atMaxTags}
           aria-invalid={Boolean(error)}
-          placeholder={placeholder}
+          placeholder={
+            atMaxTags && maxTags
+              ? `Maximum ${maxTags} roles added`
+              : placeholder
+          }
           onChange={(event) => setValue(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -76,7 +81,9 @@ export function TagInput({
               addTag();
             }
           }}
-          onBlur={addTag}
+          onBlur={() => {
+            if (!atMaxTags) addTag();
+          }}
         />
         {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">

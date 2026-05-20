@@ -14,6 +14,7 @@ import {
   IndustrySearchableMultiSelect,
   MultiSelectInput,
   RemoteRegionSalarySection,
+  SelectInputField,
   SubmitButton,
   TagInput,
   TextInputField,
@@ -306,16 +307,16 @@ export default function Home() {
               control={control}
               name="employmentType"
               render={({ field }) => (
-                <MultiSelectInput
+                <SelectInputField
                   id="employmentType"
                   label="Employment Type"
                   required
                   options={[...EMPLOYMENT_TYPE_OPTIONS]}
-                  selectedValues={field.value}
-                  onChange={field.onChange}
+                  value={field.value[0] ?? ""}
+                  onChange={(next) => field.onChange(next ? [next] : [])}
                   error={errors.employmentType?.message}
-                  description="Required. Select one or more employment types."
-                  placeholder="Select employment types"
+                  description="Required. Select one employment type."
+                  placeholder="Select employment type"
                 />
               )}
             />
@@ -323,15 +324,16 @@ export default function Home() {
               control={control}
               name="experienceLevels"
               render={({ field }) => (
-                <MultiSelectInput
+                <SelectInputField
                   id="experienceLevels"
                   label="Experience Levels"
                   required
                   options={[...EXPERIENCE_LEVEL_OPTIONS]}
-                  selectedValues={field.value}
-                  onChange={field.onChange}
+                  value={field.value[0] ?? ""}
+                  onChange={(next) => field.onChange(next ? [next] : [])}
                   error={errors.experienceLevels?.message}
-                  description="Required. Select one or more experience levels."
+                  description="Required. Select one experience level."
+                  placeholder="Select experience level"
                 />
               )}
             />
@@ -349,11 +351,12 @@ export default function Home() {
                   id="desiredJobTitle1"
                   label="Your Target Roles"
                   required
+                  maxTags={4}
                   labelHint={HINT_DESIRED_JOB_TITLES}
                   tags={field.value}
                   onTagsChange={field.onChange}
                   error={errors.desiredJobTitle1?.message}
-                  description="Required primary target titles. Type and press Enter to add each."
+                  description="Required. Add up to 4 target roles. Type and press Enter for each."
                 />
               )}
             />
