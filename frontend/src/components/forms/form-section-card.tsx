@@ -63,10 +63,10 @@ export function FormSectionCard({
           {showIconTile ? (
             <div
               className={cn(
-                "flex size-11 shrink-0 items-center justify-center rounded-lg shadow-sm ring-1 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+                "portal-section-icon flex size-11 shrink-0 items-center justify-center rounded-lg shadow-sm ring-1 [&_svg]:pointer-events-none [&_svg]:shrink-0",
                 sectionComplete
-                  ? "bg-job-title-end text-white ring-black/15 dark:ring-white/25"
-                  : "bg-neutral-950 text-neutral-50 ring-black/20 dark:bg-neutral-900 dark:ring-white/10",
+                  ? "portal-section-icon--done bg-job-title-end text-white ring-black/15 dark:ring-white/25"
+                  : "portal-section-icon--pending bg-neutral-950 text-neutral-50 ring-black/20 dark:bg-neutral-900 dark:ring-white/10",
               )}
               aria-hidden
             >

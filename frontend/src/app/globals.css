@@ -782,3 +782,164 @@ html:not(.dark) main button[role="switch"]:hover:not(:disabled) {
 .portal-btn-primary:disabled {
   opacity: 0.5;
 }
+
+/* ─── Portal dark theme (JobPilot); forms inherit via scoped shadcn tokens ─── */
+html.dark.portal-route {
+  --portal-card-elevated: #14161a;
+  --portal-border: #1e2128;
+}
+
+html.dark .portal-shell {
+  --portal-accent: #3b82f6;
+  --portal-accent-muted: color-mix(in oklab, #3b82f6 18%, transparent);
+  --portal-sidebar-bg: #0f1115;
+  --portal-main-bg: #0a0b0d;
+  --portal-card-elevated: #14161a;
+  --portal-border: #1e2128;
+  --portal-text-muted: #8b919a;
+  --portal-success: #10b981;
+
+  --background: #0a0b0d;
+  --foreground: #e8eaed;
+  --card: #14161a;
+  --card-foreground: #f3f4f6;
+  --popover: #14161a;
+  --popover-foreground: #f3f4f6;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1d24;
+  --secondary-foreground: #e8eaed;
+  --muted: #1a1d24;
+  --muted-foreground: #8b919a;
+  --accent: #1a1d24;
+  --accent-foreground: #e8eaed;
+  --border: #1e2128;
+  --input: #1e2128;
+  --ring: color-mix(in oklab, #3b82f6 50%, transparent);
+  --sidebar-border: #1e2128;
+  --sidebar-foreground: #c8cdd4;
+  --sidebar-accent: #1a1d24;
+  --sidebar-accent-foreground: #e8eaed;
+  color: #e8eaed;
+}
+
+html.dark .portal-shell .portal-nav-link[data-active="true"] {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+html.dark .portal-shell .portal-nav-link[data-active="true"]:hover:not(:disabled) {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+html.dark .portal-shell .portal-page-title {
+  color: #f3f4f6;
+}
+
+html.dark .portal-shell .portal-btn-primary {
+  background: var(--portal-accent);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--portal-accent) 40%, transparent);
+}
+
+html.dark .portal-shell .portal-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* Job Specs form — cards, wizard chrome, inputs */
+html.dark .portal-shell .portal-main [data-slot="card"] {
+  background-color: var(--portal-card-elevated);
+  color: var(--card-foreground);
+  --tw-ring-color: color-mix(in oklab, #ffffff 8%, transparent);
+}
+
+html.dark .portal-shell .portal-main .rounded-xl.border.bg-card\/90,
+html.dark .portal-shell .portal-main form > div.space-y-3.rounded-xl.border.bg-card {
+  background-color: color-mix(in oklab, var(--portal-card-elevated) 92%, transparent);
+  border-color: var(--portal-border);
+}
+
+html.dark .portal-shell .portal-section-icon--pending {
+  background-color: #1a1d24;
+  color: #93c5fd;
+  --tw-ring-color: #252830;
+}
+
+html.dark .portal-shell .portal-section-icon--done {
+  background-color: var(--portal-accent);
+  color: #ffffff;
+  --tw-ring-color: color-mix(in oklab, var(--portal-accent) 40%, transparent);
+}
+
+html.dark .portal-shell .portal-main [data-slot="card-header"] .border-\[var\(--job-title-gradient-end\)\] {
+  border-color: color-mix(in oklab, var(--portal-accent) 40%, transparent);
+  background: color-mix(in oklab, var(--portal-accent) 16%, transparent);
+  color: #93c5fd;
+}
+
+html.dark .portal-shell .portal-main [data-slot="input"] {
+  background-color: #0f1115;
+  border-color: var(--portal-border);
+}
+
+html.dark .portal-shell .portal-main [data-slot="input"]:focus-visible {
+  border-color: var(--portal-accent);
+}
+
+html.dark .portal-shell .portal-main [data-slot="switch"][data-state="unchecked"] {
+  background-color: #1a1d24;
+}
+
+html.dark .portal-shell .portal-main [data-slot="switch"][data-state="checked"] {
+  background-color: var(--portal-accent);
+}
+
+html.dark .portal-shell .portal-main [data-slot="switch-thumb"] {
+  background-color: #ffffff;
+}
+
+html.dark .portal-shell .portal-main [data-slot="button"][data-variant="default"]:not(.portal-btn-primary) {
+  background-color: var(--portal-accent);
+  color: var(--primary-foreground);
+}
+
+html.dark .portal-shell .portal-main [data-slot="button"][data-variant="outline"] {
+  border-color: var(--portal-border);
+  background-color: transparent;
+  color: #e8eaed;
+}
+
+html.dark .portal-shell .portal-main [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
+  background-color: #1a1d24;
+}
+
+html.dark .portal-shell .portal-main .text-emerald-600,
+html.dark .portal-shell .portal-main .dark\:text-emerald-400 {
+  color: var(--portal-success);
+}
+
+html.dark .portal-shell .portal-main input[type="range"]::-webkit-slider-thumb {
+  background-color: var(--portal-accent);
+}
+
+html.dark .portal-shell .portal-main input[type="range"]::-moz-range-thumb {
+  background-color: var(--portal-accent);
+}
+
+/* Portaled selects/menus (render outside .portal-shell) */
+html.dark.portal-route [data-slot="select-content"],
+html.dark.portal-route [data-slot="dropdown-menu-content"],
+html.dark.portal-route .bg-popover.text-popover-foreground {
+  background-color: var(--portal-card-elevated, #14161a);
+  color: #f3f4f6;
+  border-color: var(--portal-border, #1e2128);
+  --tw-ring-color: color-mix(in oklab, #ffffff 8%, transparent);
+}
+
+html.dark.portal-route [data-slot="select-item"][data-highlighted],
+html.dark.portal-route [data-slot="dropdown-menu-item"][data-highlighted],
+html.dark.portal-route [data-slot="dropdown-menu-item"]:focus {
+  background-color: #1a1d24;
+  color: #e8eaed;
+}

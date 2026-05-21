@@ -522,7 +522,7 @@ export function JobSpecsWizardPage() {
             loading={isSubmitting}
             loadingText="Submitting..."
             size="lg"
-            className="w-full sm:w-auto"
+            className="portal-btn-primary w-full sm:w-auto"
           >
             Save Job Search Specifications
           </SubmitButton>
