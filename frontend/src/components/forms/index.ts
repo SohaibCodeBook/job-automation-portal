@@ -1,4 +1,5 @@
 export * from "@/components/forms/job-search-form-shell";
+export { JobSpecsWizardPage } from "@/components/forms/job-specs-wizard-page";
 export * from "@/components/forms/form-field-wrapper";
 export * from "@/components/forms/form-step-navigation";
 export * from "@/components/forms/form-step-wrapper";

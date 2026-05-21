@@ -18,9 +18,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { ROUTES } from "@/constants/routes";
+
 function safeNextParam(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/";
+    return ROUTES.scrappedJobs;
   }
   return value;
 }

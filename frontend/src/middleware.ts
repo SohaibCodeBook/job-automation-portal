@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { ROUTES } from "@/constants/routes";
 
 function safeNextPath(pathname: string) {
   if (!pathname.startsWith("/") || pathname.startsWith("//")) {
-    return "/";
+    return ROUTES.scrappedJobs;
   }
   return pathname;
 }
@@ -40,7 +41,7 @@ export default auth((request) => {
       pathname === "/forgot-password")
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = ROUTES.scrappedJobs;
     url.searchParams.delete("next");
     return NextResponse.redirect(url);
   }
