@@ -17,13 +17,15 @@ import {
 import { RegionPayRangeCard } from "@/components/forms/region-pay-range-card";
 import {
   getAllCountries,
-  getCitiesByState,
   getStatesByCountry,
+  searchCitiesInCountry,
 } from "@/lib/locations";
 import { cn } from "@/lib/utils";
 import type { JobSearchFormValues } from "@/types/job-search-form";
 
-const CITY_LIMIT = 3 as const;
+const LOCATION_LIMIT = 3 as const;
+
+type SearchMode = "state" | "city" | null;
 
 type HybridLocationPreferencesPanelProps = {
   title?: string;
@@ -36,6 +38,15 @@ function countryFlag(code: string): string {
   return Country.getCountryByCode(code)?.flag ?? "🌐";
 }
 
+function inferSearchMode(
+  states: string[],
+  cities: string[],
+): SearchMode {
+  if (cities.length > 0) return "city";
+  if (states.length > 0) return "state";
+  return null;
+}
+
 export function HybridLocationPreferencesPanel({
   title = "Hybrid Location Preferences",
   setValue,
@@ -43,9 +54,28 @@ export function HybridLocationPreferencesPanel({
   errors,
 }: HybridLocationPreferencesPanelProps) {
   const selectedCountryName = watch("selectedRegions")?.[0] ?? "";
-  const selectedStateName = watch("selectedStates")?.[0] ?? "";
+  const selectedStates = watch("selectedStates") ?? [];
   const selectedCities = watch("selectedCities") ?? [];
   const payRangeFilter = watch("payRangeFilter") ?? {};
+
+  const [searchMode, setSearchMode] = React.useState<SearchMode>(() =>
+    inferSearchMode(selectedStates, selectedCities),
+  );
+
+  React.useEffect(() => {
+    if (!selectedCountryName) {
+      setSearchMode(null);
+      return;
+    }
+    if (searchMode === null) {
+      setSearchMode(inferSearchMode(selectedStates, selectedCities));
+    }
+  }, [
+    selectedCountryName,
+    selectedStates,
+    selectedCities,
+    searchMode,
+  ]);
 
   const countryOptions = React.useMemo((): LocationSearchOption[] => {
     return getAllCountries().map((country) => ({
@@ -62,35 +92,33 @@ export function HybridLocationPreferencesPanel({
     );
   }, [selectedCountryName]);
 
-  const stateCode = React.useMemo(() => {
-    if (!countryCode || !selectedStateName) return "";
-    return (
-      getStatesByCountry(countryCode).find((s) => s.name === selectedStateName)
-        ?.code ?? ""
-    );
-  }, [countryCode, selectedStateName]);
-
   const stateOptions = React.useMemo((): LocationSearchOption[] => {
     if (!countryCode) return [];
-    return getStatesByCountry(countryCode).map((state) => ({
-      value: state.name,
-      label: state.name,
-      subLabel: selectedCountryName,
-    }));
-  }, [countryCode, selectedCountryName]);
-
-  const cityOptions = React.useMemo((): LocationSearchOption[] => {
-    if (!countryCode || !stateCode) return [];
-    return getCitiesByState(countryCode, stateCode)
-      .filter((city) => !selectedCities.includes(city.name))
-      .map((city) => ({
-        value: city.name,
-        label: city.name,
-        subLabel: selectedStateName,
+    return getStatesByCountry(countryCode)
+      .filter((state) => !selectedStates.includes(state.name))
+      .map((state) => ({
+        value: state.name,
+        label: state.name,
+        subLabel: selectedCountryName,
       }));
-  }, [countryCode, stateCode, selectedStateName, selectedCities]);
+  }, [countryCode, selectedCountryName, selectedStates]);
 
-  const atCityCap = selectedCities.length >= CITY_LIMIT;
+  const resolveCountryCityOptions = React.useCallback(
+    (query: string): LocationSearchOption[] => {
+      if (!countryCode) return [];
+      return searchCitiesInCountry(countryCode, query)
+        .filter((city) => !selectedCities.includes(city.name))
+        .map((city) => ({
+          value: city.name,
+          label: city.name,
+          subLabel: city.stateName,
+        }));
+    },
+    [countryCode, selectedCities],
+  );
+
+  const atStateCap = selectedStates.length >= LOCATION_LIMIT;
+  const atCityCap = selectedCities.length >= LOCATION_LIMIT;
   const countryMeta = selectedCountryName
     ? getRemoteRegionPickerOption(selectedCountryName)
     : undefined;
@@ -99,6 +127,7 @@ export function HybridLocationPreferencesPanel({
     : undefined;
 
   const setCountry = (name: string) => {
+    setSearchMode(null);
     setValue("selectedRegions", [name], {
       shouldDirty: true,
       shouldValidate: true,
@@ -113,23 +142,48 @@ export function HybridLocationPreferencesPanel({
   };
 
   const clearCountry = () => {
+    setSearchMode(null);
     setValue("selectedRegions", [], { shouldDirty: true, shouldValidate: true });
     setValue("payRangeFilter", {}, { shouldDirty: true, shouldValidate: true });
     setValue("selectedStates", [], { shouldDirty: true, shouldValidate: true });
     setValue("selectedCities", [], { shouldDirty: true, shouldValidate: true });
   };
 
-  const setState = (name: string) => {
-    setValue("selectedStates", [name], {
+  const chooseSearchMode = (mode: "state" | "city") => {
+    setSearchMode(mode);
+    if (mode === "state") {
+      setValue("selectedCities", [], { shouldDirty: true, shouldValidate: true });
+    } else {
+      setValue("selectedStates", [], { shouldDirty: true, shouldValidate: true });
+    }
+  };
+
+  const resetSearchMode = () => {
+    setSearchMode(null);
+    setValue("selectedStates", [], { shouldDirty: true, shouldValidate: true });
+    setValue("selectedCities", [], { shouldDirty: true, shouldValidate: true });
+  };
+
+  const addState = (name: string) => {
+    if (selectedStates.includes(name)) return;
+    if (selectedStates.length >= LOCATION_LIMIT) return;
+    setValue("selectedStates", [...selectedStates, name], {
       shouldDirty: true,
       shouldValidate: true,
     });
-    setValue("selectedCities", [], { shouldDirty: true, shouldValidate: true });
+  };
+
+  const removeState = (name: string) => {
+    setValue(
+      "selectedStates",
+      selectedStates.filter((s) => s !== name),
+      { shouldDirty: true, shouldValidate: true },
+    );
   };
 
   const addCity = (name: string) => {
     if (selectedCities.includes(name)) return;
-    if (selectedCities.length >= CITY_LIMIT) return;
+    if (selectedCities.length >= LOCATION_LIMIT) return;
     setValue("selectedCities", [...selectedCities, name], {
       shouldDirty: true,
       shouldValidate: true,
@@ -160,6 +214,15 @@ export function HybridLocationPreferencesPanel({
     );
   };
 
+  const roleKind = title.toLowerCase().includes("onsite") ? "onsite" : "hybrid";
+
+  const headerCount =
+    searchMode === "state"
+      ? `${selectedStates.length}/${LOCATION_LIMIT} states`
+      : searchMode === "city"
+        ? `${selectedCities.length}/${LOCATION_LIMIT} cities`
+        : "0 locations";
+
   return (
     <div
       className={cn(
@@ -174,65 +237,187 @@ export function HybridLocationPreferencesPanel({
           </span>
           <p className="text-sm font-semibold">{title}</p>
         </div>
-        <span className="text-xs tabular-nums text-muted-foreground">
-          {selectedCities.length}/{CITY_LIMIT} cities
-        </span>
+        {selectedCountryName ? (
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {headerCount}
+          </span>
+        ) : null}
       </div>
 
       <div className="space-y-4 p-4">
-        <p className="text-sm text-muted-foreground">
-          Select a <span className="font-medium text-foreground">country</span>,
-          then a <span className="font-medium text-foreground">state or province</span>,
-          then add up to {CITY_LIMIT} cities.
-        </p>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="hybrid-country" className="text-xs font-medium">
-              Country
-            </Label>
-            <LocationSearchCombobox
-              id="hybrid-country"
-              placeholder="Search countries..."
-              options={countryOptions}
-              value={selectedCountryName || null}
-              onValueChange={setCountry}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="hybrid-state" className="text-xs font-medium">
-              State / Province
-            </Label>
-            <LocationSearchCombobox
-              id="hybrid-state"
-              placeholder="Search states..."
-              options={stateOptions}
-              value={selectedStateName || null}
-              onValueChange={setState}
-              disabled={!countryCode}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="hybrid-city" className="text-xs font-medium">
-              City
-            </Label>
-            <LocationSearchCombobox
-              id="hybrid-city"
-              placeholder="Search cities..."
-              options={cityOptions}
-              value={null}
-              onValueChange={addCity}
-              disabled={!stateCode || atCityCap}
-            />
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="hybrid-country" className="text-xs font-medium">
+            Country <span className="text-destructive">*</span>
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Country is required. Search and select your country first.
+          </p>
+          <LocationSearchCombobox
+            id="hybrid-country"
+            placeholder="Search countries..."
+            options={countryOptions}
+            value={selectedCountryName || null}
+            onValueChange={setCountry}
+          />
         </div>
 
-        {atCityCap ? (
-          <p className="text-xs text-muted-foreground">
-            Maximum {CITY_LIMIT} cities — remove one to add another.
-          </p>
+        {selectedCountryName ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm">
+            <span aria-hidden>{countryMeta?.flag ?? "🌐"}</span>
+            <span>{selectedCountryName}</span>
+          </span>
+        ) : null}
+
+        {selectedCountryName && searchMode === null ? (
+          <div className="space-y-3 border-t border-border pt-4">
+            <p className="text-sm text-muted-foreground">
+              Search within a state/province, or go straight to cities?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => chooseSearchMode("state")}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                  "border-border bg-card text-foreground hover:bg-muted/80",
+                )}
+              >
+                <span aria-hidden>🗺️</span>
+                By state / province
+              </button>
+              <button
+                type="button"
+                onClick={() => chooseSearchMode("city")}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                  "border-border bg-card text-foreground hover:bg-muted/80",
+                )}
+              >
+                <span aria-hidden>🏙️</span>
+                By city
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {selectedCountryName && searchMode !== null ? (
+          <div className="space-y-3 border-t border-border pt-4">
+            <p className="text-sm text-muted-foreground">
+              {searchMode === "state" ? (
+                <>
+                  Searching by{" "}
+                  <span className="font-medium text-foreground">
+                    state / province
+                  </span>{" "}
+                  for {roleKind} roles — add up to {LOCATION_LIMIT} states.
+                </>
+              ) : (
+                <>
+                  Searching by{" "}
+                  <span className="font-medium text-foreground">city</span> for{" "}
+                  {roleKind} roles — add up to {LOCATION_LIMIT} cities.
+                </>
+              )}
+            </p>
+
+            {searchMode === "state" ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="hybrid-state" className="text-xs font-medium">
+                  State / Province
+                </Label>
+                <LocationSearchCombobox
+                  id="hybrid-state"
+                  placeholder="Search states..."
+                  options={stateOptions}
+                  value={null}
+                  onValueChange={addState}
+                  disabled={atStateCap}
+                />
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label htmlFor="hybrid-city" className="text-xs font-medium">
+                  City
+                </Label>
+                <LocationSearchCombobox
+                  id="hybrid-city"
+                  placeholder="Search cities..."
+                  resolveOptions={resolveCountryCityOptions}
+                  value={null}
+                  onValueChange={addCity}
+                  disabled={atCityCap}
+                  emptyHint="Type to search cities across this country."
+                />
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={resetSearchMode}
+            >
+              ← Change search type
+            </button>
+
+            {searchMode === "state" && atStateCap ? (
+              <p className="text-xs text-muted-foreground">
+                Maximum {LOCATION_LIMIT} states — remove one to add another.
+              </p>
+            ) : null}
+            {searchMode === "city" && atCityCap ? (
+              <p className="text-xs text-muted-foreground">
+                Maximum {LOCATION_LIMIT} cities — remove one to add another.
+              </p>
+            ) : null}
+
+            {searchMode === "state" && selectedStates.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {selectedStates.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm"
+                  >
+                    <span aria-hidden>{countryMeta?.flag ?? "📍"}</span>
+                    <span>{name}</span>
+                    <Button
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="size-4 rounded-full"
+                      onClick={() => removeState(name)}
+                      aria-label={`Remove state ${name}`}
+                    >
+                      ×
+                    </Button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            {searchMode === "city" && selectedCities.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {selectedCities.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm"
+                  >
+                    <span aria-hidden>{countryMeta?.flag ?? "📍"}</span>
+                    <span>{name}</span>
+                    <Button
+                      type="button"
+                      size="icon-xs"
+                      variant="ghost"
+                      className="size-4 rounded-full"
+                      onClick={() => removeCity(name)}
+                      aria-label={`Remove city ${name}`}
+                    >
+                      ×
+                    </Button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
         ) : null}
 
         {(errors.selectedRegions?.message ||
@@ -250,30 +435,6 @@ export function HybridLocationPreferencesPanel({
         "message" in errors.payRangeFilter &&
         typeof errors.payRangeFilter.message === "string" ? (
           <p className="text-xs text-destructive">{errors.payRangeFilter.message}</p>
-        ) : null}
-
-        {selectedCities.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {selectedCities.map((name) => (
-              <span
-                key={name}
-                className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm"
-              >
-                <span aria-hidden>{countryMeta?.flag ?? "📍"}</span>
-                <span>{name}</span>
-                <Button
-                  type="button"
-                  size="icon-xs"
-                  variant="ghost"
-                  className="size-4 rounded-full"
-                  onClick={() => removeCity(name)}
-                  aria-label={`Remove city ${name}`}
-                >
-                  ×
-                </Button>
-              </span>
-            ))}
-          </div>
         ) : null}
 
         {selectedCountryName && payRow ? (

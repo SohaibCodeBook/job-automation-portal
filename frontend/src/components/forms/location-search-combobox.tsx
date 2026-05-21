@@ -17,20 +17,25 @@ export type LocationSearchOption = {
 type LocationSearchComboboxProps = {
   id: string;
   placeholder: string;
-  options: readonly LocationSearchOption[];
+  options?: readonly LocationSearchOption[];
+  /** When set, options are resolved from the current search query (for large lists). */
+  resolveOptions?: (query: string) => readonly LocationSearchOption[];
   value: string | null;
   onValueChange: (value: string) => void;
   disabled?: boolean;
+  emptyHint?: string;
   className?: string;
 };
 
 export function LocationSearchCombobox({
   id,
   placeholder,
-  options,
+  options = [],
+  resolveOptions,
   value,
   onValueChange,
   disabled = false,
+  emptyHint,
   className,
 }: LocationSearchComboboxProps) {
   const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -52,6 +57,9 @@ export function LocationSearchCombobox({
   );
 
   const filtered = React.useMemo(() => {
+    if (resolveOptions) {
+      return resolveOptions(query);
+    }
     const q = query.trim().toLowerCase();
     return options.filter((opt) => {
       if (!q) return true;
@@ -60,7 +68,7 @@ export function LocationSearchCombobox({
         (opt.subLabel?.toLowerCase().includes(q) ?? false)
       );
     });
-  }, [options, query]);
+  }, [options, query, resolveOptions]);
 
   const displayValue = open ? query : (selectedOption?.label ?? "");
 
@@ -121,9 +129,14 @@ export function LocationSearchCombobox({
   const dropdownBody =
     open && !disabled ? (
       <>
+        {resolveOptions && query.trim().length === 0 ? (
+          <p className="px-2 py-2 text-xs text-muted-foreground">
+            {emptyHint ?? "Type to search."}
+          </p>
+        ) : null}
         {filtered.map((opt) => (
           <button
-            key={opt.value}
+            key={`${opt.value}-${opt.subLabel ?? ""}`}
             type="button"
             role="option"
             aria-selected={opt.value === value}

@@ -156,22 +156,9 @@ export const jobSearchFormSchema = z
           message: validationMessages.hybridLocationRequired,
           path: ["selectedRegions"],
         });
+      } else {
+        validateLocationPay(country);
       }
-      if (!hybridStates.length) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Select a state or province.",
-          path: ["selectedStates"],
-        });
-      }
-      if (hybridCities.length === 0) {
-        ctx.addIssue({
-          code: "custom",
-          message: validationMessages.hybridLocationRequired,
-          path: ["selectedCities"],
-        });
-      }
-      validateLocationPay(country);
     }
 
     if (values.onsite) {
@@ -182,22 +169,9 @@ export const jobSearchFormSchema = z
           message: validationMessages.onsiteLocationRequired,
           path: ["selectedRegions"],
         });
+      } else {
+        validateLocationPay(country);
       }
-      if (!hybridStates.length) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Select a state or province.",
-          path: ["selectedStates"],
-        });
-      }
-      if (hybridCities.length === 0) {
-        ctx.addIssue({
-          code: "custom",
-          message: validationMessages.onsiteLocationRequired,
-          path: ["selectedCities"],
-        });
-      }
-      validateLocationPay(country);
     }
 
     if (!values.remote) {
