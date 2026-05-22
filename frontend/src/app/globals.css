@@ -787,6 +787,12 @@ html:not(.dark) main button[role="switch"]:hover:not(:disabled) {
 html.dark.portal-route {
   --portal-card-elevated: #14161a;
   --portal-border: #1e2128;
+  --popover: #14161a;
+  --popover-foreground: #f3f4f6;
+  --accent: #1a1d24;
+  --accent-foreground: #e8eaed;
+  --muted-foreground: #8b919a;
+  --border: #1e2128;
 }
 
 html.dark .portal-shell {
@@ -927,19 +933,49 @@ html.dark .portal-shell .portal-main input[type="range"]::-moz-range-thumb {
   background-color: var(--portal-accent);
 }
 
-/* Portaled selects/menus (render outside .portal-shell) */
-html.dark.portal-route [data-slot="select-content"],
-html.dark.portal-route [data-slot="dropdown-menu-content"],
-html.dark.portal-route .bg-popover.text-popover-foreground {
-  background-color: var(--portal-card-elevated, #14161a);
-  color: #f3f4f6;
-  border-color: var(--portal-border, #1e2128);
+/* Portaled form dropdowns (render on document.body, outside .portal-shell) */
+html.dark.portal-route .portal-form-dropdown,
+html.dark.portal-route [data-slot="select-content"].portal-form-dropdown,
+html.dark.portal-route [data-slot="dropdown-menu-content"].portal-form-dropdown {
+  background-color: #14161a !important;
+  color: #f3f4f6 !important;
+  border-color: #1e2128 !important;
   --tw-ring-color: color-mix(in oklab, #ffffff 8%, transparent);
 }
 
-html.dark.portal-route [data-slot="select-item"][data-highlighted],
-html.dark.portal-route [data-slot="dropdown-menu-item"][data-highlighted],
-html.dark.portal-route [data-slot="dropdown-menu-item"]:focus {
-  background-color: #1a1d24;
+html.dark.portal-route .portal-form-dropdown-option {
   color: #e8eaed;
+}
+
+html.dark.portal-route .portal-form-dropdown-option:hover,
+html.dark.portal-route .portal-form-dropdown-option:focus-visible {
+  background-color: #1a1d24 !important;
+  color: #f3f4f6 !important;
+}
+
+html.dark.portal-route .portal-form-dropdown .text-muted-foreground {
+  color: #8b919a;
+}
+
+html.dark.portal-route [data-slot="select-item"] {
+  color: #e8eaed;
+}
+
+html.dark.portal-route [data-slot="select-item"][data-highlighted],
+html.dark.portal-route [data-slot="select-item"]:focus {
+  background-color: #1a1d24 !important;
+  color: #f3f4f6 !important;
+}
+
+html.dark.portal-route [data-slot="dropdown-menu-item"],
+html.dark.portal-route [data-slot="dropdown-menu-checkbox-item"] {
+  color: #e8eaed;
+}
+
+html.dark.portal-route [data-slot="dropdown-menu-item"][data-highlighted],
+html.dark.portal-route [data-slot="dropdown-menu-item"]:focus,
+html.dark.portal-route [data-slot="dropdown-menu-checkbox-item"][data-highlighted],
+html.dark.portal-route [data-slot="dropdown-menu-checkbox-item"]:focus {
+  background-color: #1a1d24 !important;
+  color: #f3f4f6 !important;
 }

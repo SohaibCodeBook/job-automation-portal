@@ -16,6 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
+  PORTAL_FORM_DROPDOWN,
+  PORTAL_FORM_DROPDOWN_OPTION,
+} from "@/constants/portal-form-classes";
+import {
   getRemoteRegionPickerOption,
   getRemoteRegionPickerOptions,
   currencyBadgeLabel,
@@ -200,7 +204,7 @@ export function RemoteRegionSalarySection({
             key={opt.regionValue}
             type="button"
             role="option"
-            className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-accent"
+            className={cn(PORTAL_FORM_DROPDOWN_OPTION, "items-center gap-2 py-2")}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => addRegion(opt.regionValue)}
           >
@@ -235,7 +239,7 @@ export function RemoteRegionSalarySection({
               maxHeight: listBox.maxHeight,
               zIndex: 10000,
             }}
-            className="overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg ring-1 ring-foreground/10 [scrollbar-gutter:stable]"
+            className={PORTAL_FORM_DROPDOWN}
           >
             {dropdownBody}
           </div>,

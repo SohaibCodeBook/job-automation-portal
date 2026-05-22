@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PORTAL_FORM_DROPDOWN } from "@/constants/portal-form-classes";
 import { cn } from "@/lib/utils";
 
 import { FormFieldWrapper } from "./form-field-wrapper";
@@ -66,7 +67,7 @@ export function SelectInputField({
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className={PORTAL_FORM_DROPDOWN}>
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}

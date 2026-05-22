@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PORTAL_FORM_DROPDOWN } from "@/constants/portal-form-classes";
 import { cn } from "@/lib/utils";
 
 import { FormFieldWrapper } from "./form-field-wrapper";
@@ -78,7 +79,12 @@ export function MultiSelectInput({
             <ChevronDown className="size-4 opacity-60" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width)">
+        <DropdownMenuContent
+          className={cn(
+            PORTAL_FORM_DROPDOWN,
+            "w-(--radix-dropdown-menu-trigger-width)",
+          )}
+        >
           {options.map((option) => {
             const checked = selectedValues.includes(option.value);
             return (

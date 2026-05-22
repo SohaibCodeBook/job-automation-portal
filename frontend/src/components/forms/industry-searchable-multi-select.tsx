@@ -6,6 +6,10 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  PORTAL_FORM_DROPDOWN,
+  PORTAL_FORM_DROPDOWN_OPTION,
+} from "@/constants/portal-form-classes";
 import { PREDEFINED_INDUSTRIES } from "@/constants/predefined-industries";
 import { cn } from "@/lib/utils";
 
@@ -147,11 +151,7 @@ export function IndustrySearchableMultiSelect({
             type="button"
             role="option"
             aria-selected={false}
-            className={cn(
-              "flex w-full rounded-sm px-2 py-1.5 text-left text-sm",
-              "hover:bg-accent hover:text-accent-foreground",
-              "focus-visible:bg-accent focus-visible:outline-none",
-            )}
+            className={cn(PORTAL_FORM_DROPDOWN_OPTION, "rounded-sm px-2 py-1.5")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => addIndustry(name)}
           >
@@ -180,9 +180,7 @@ export function IndustrySearchableMultiSelect({
               maxHeight: listBox.maxHeight,
               zIndex: 10_000,
             }}
-            className={cn(
-              "overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-lg [scrollbar-gutter:stable]",
-            )}
+            className={cn(PORTAL_FORM_DROPDOWN, "rounded-md")}
           >
             {listContent}
           </ul>,
