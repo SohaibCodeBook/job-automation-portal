@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.db.session import AsyncSessionLocal
 from app.services.auth_service import AuthService
 from app.services.job_application_service import JobApplicationService
+from app.services.job_listing_service import JobListingService
 
 
 async def verify_internal_api_key(
@@ -37,3 +38,9 @@ async def get_job_application_service(
     session: AsyncSession = Depends(get_db_session),
 ) -> AsyncGenerator[JobApplicationService, None]:
     yield JobApplicationService(session)
+
+
+async def get_job_listing_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> AsyncGenerator[JobListingService, None]:
+    yield JobListingService(session)
