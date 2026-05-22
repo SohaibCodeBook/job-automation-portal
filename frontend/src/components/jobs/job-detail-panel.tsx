@@ -16,6 +16,54 @@ type JobDetailPanelProps = {
   className?: string;
 };
 
+function AboutTheRole({ text }: { text: string }) {
+  const proseId = React.useId();
+  const [expanded, setExpanded] = React.useState(false);
+  const [canExpand, setCanExpand] = React.useState(false);
+  const proseRef = React.useRef<HTMLParagraphElement>(null);
+
+  React.useEffect(() => {
+    setExpanded(false);
+  }, [text]);
+
+  React.useLayoutEffect(() => {
+    const el = proseRef.current;
+    if (!el) return;
+    if (expanded) {
+      setCanExpand(true);
+      return;
+    }
+    setCanExpand(el.scrollHeight > el.clientHeight + 2);
+  }, [text, expanded]);
+
+  return (
+    <section className="job-detail-section">
+      <h3 className="job-detail-section-title">About the role</h3>
+      <p
+        ref={proseRef}
+        id={proseId}
+        className={cn(
+          "job-detail-prose",
+          !expanded && "job-detail-prose--clamped",
+        )}
+      >
+        {text}
+      </p>
+      {canExpand ? (
+        <button
+          type="button"
+          className="job-detail-read-more"
+          aria-expanded={expanded}
+          aria-controls={proseId}
+          onClick={() => setExpanded((open) => !open)}
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      ) : null}
+    </section>
+  );
+}
+
 function DetailField({
   label,
   value,
@@ -92,19 +140,18 @@ export function JobDetailPanel({
       className={cn("job-detail-panel", className)}
       aria-label="Job details"
     >
-      <div className="job-detail-panel-header">
-        <button
-          type="button"
-          className="job-detail-close"
-          onClick={onClose}
-          aria-label="Close job details"
-        >
-          <X className="size-5" />
-        </button>
-      </div>
-
       {isLoading ? (
-        <div className="job-detail-panel-body space-y-4 p-4" aria-busy="true">
+        <div className="job-detail-panel-scroll space-y-4 p-4" aria-busy="true">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="job-detail-close"
+              onClick={onClose}
+              aria-label="Close job details"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
           <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
           <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
           <div className="grid grid-cols-2 gap-3">
@@ -116,88 +163,112 @@ export function JobDetailPanel({
       ) : null}
 
       {error && !isLoading ? (
-        <p className="p-4 text-sm text-destructive" role="alert">
-          {error}
-        </p>
+        <div className="job-detail-panel-scroll p-4">
+          <div className="mb-3 flex justify-end">
+            <button
+              type="button"
+              className="job-detail-close"
+              onClick={onClose}
+              aria-label="Close job details"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        </div>
       ) : null}
 
       {detail && !isLoading && !error ? (
-        <div className="job-detail-panel-body">
-          <div className="job-detail-hero">
-            <div className="job-card-logo size-12 text-sm">{companyInitials(detail.company)}</div>
-            <div className="min-w-0">
-              <h2 className="job-detail-title">{detail.title ?? "Untitled role"}</h2>
-              <p className="job-detail-subtitle">
-                {[detail.company, detail.location].filter(Boolean).join(" · ")}
-              </p>
+        <>
+          <div className="job-detail-panel-head">
+            <div className="job-detail-panel-header">
+              <button
+                type="button"
+                className="job-detail-close"
+                onClick={onClose}
+                aria-label="Close job details"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <div className="job-detail-hero">
+              <div className="job-card-logo size-12 text-sm">
+                {companyInitials(detail.company)}
+              </div>
+              <div className="min-w-0">
+                <h2 className="job-detail-title">{detail.title ?? "Untitled role"}</h2>
+                <p className="job-detail-subtitle">
+                  {[detail.company, detail.location].filter(Boolean).join(" · ")}
+                </p>
+              </div>
+            </div>
+
+            <div className="job-detail-tags">
+              {detail.employment_type ? (
+                <span className="job-card-tag">{detail.employment_type}</span>
+              ) : null}
+              {detail.work_type ? (
+                <span className="job-card-tag">{detail.work_type}</span>
+              ) : null}
+              {detail.field ? <span className="job-card-tag">{detail.field}</span> : null}
+              {detail.job_origin ? (
+                <span className="job-card-tag">{detail.job_origin}</span>
+              ) : null}
+            </div>
+
+            <div className="job-detail-actions">
+              {detail.url ? (
+                <Button className="portal-btn-primary w-full" asChild>
+                  <a href={detail.url} target="_blank" rel="noopener noreferrer">
+                    Apply now — open job listing
+                    <ExternalLink className="size-4" aria-hidden />
+                  </a>
+                </Button>
+              ) : (
+                <Button className="portal-btn-primary w-full" disabled>
+                  Apply now — no URL available
+                </Button>
+              )}
             </div>
           </div>
 
-          <div className="job-detail-tags">
-            {detail.employment_type ? (
-              <span className="job-card-tag">{detail.employment_type}</span>
-            ) : null}
-            {detail.work_type ? (
-              <span className="job-card-tag">{detail.work_type}</span>
-            ) : null}
-            {detail.field ? <span className="job-card-tag">{detail.field}</span> : null}
-            {detail.job_origin ? (
-              <span className="job-card-tag">{detail.job_origin}</span>
-            ) : null}
-          </div>
+          <div className="job-detail-panel-scroll">
+            <div className="job-detail-grid">
+              <DetailField label="Job title" value={detail.title} />
+              <DetailField label="Company" value={detail.company} />
+              <DetailField label="Location" value={detail.location} />
+              <DetailField label="Pay range" value={detail.pay_range} />
+              <DetailField label="Employment type" value={detail.employment_type} />
+              <DetailField label="Work type" value={detail.work_type} />
+              <DetailField
+                label="Posted"
+                value={displayPostedTime(detail.posted_time, detail.created_at)}
+              />
+              <DetailField label="Field" value={detail.field} />
+              <DetailField label="Industries" value={detail.industries} />
+              <DetailField label="Source" value={detail.job_origin} />
+              <DetailField label="Name" value={detail.name} />
+              <DetailField label="Omit words" value={detail.omit_words} />
+              <DetailField
+                label="Company website"
+                value={detail.company_website ?? detail.company_url}
+                href={
+                  detail.company_website?.startsWith("http")
+                    ? detail.company_website
+                    : detail.company_website
+                      ? `https://${detail.company_website}`
+                      : detail.company_url
+                }
+              />
+              <DetailField label="Job URL" value="View listing" href={detail.url} />
+            </div>
 
-          <div className="job-detail-actions">
-            {detail.url ? (
-              <Button className="portal-btn-primary w-full" asChild>
-                <a href={detail.url} target="_blank" rel="noopener noreferrer">
-                  Apply now — open job listing
-                  <ExternalLink className="size-4" aria-hidden />
-                </a>
-              </Button>
-            ) : (
-              <Button className="portal-btn-primary w-full" disabled>
-                Apply now — no URL available
-              </Button>
-            )}
+            {detail.about_job ? <AboutTheRole text={detail.about_job} /> : null}
           </div>
-
-          <div className="job-detail-grid">
-            <DetailField label="Job title" value={detail.title} />
-            <DetailField label="Company" value={detail.company} />
-            <DetailField label="Location" value={detail.location} />
-            <DetailField label="Pay range" value={detail.pay_range} />
-            <DetailField label="Employment type" value={detail.employment_type} />
-            <DetailField label="Work type" value={detail.work_type} />
-            <DetailField
-              label="Posted"
-              value={displayPostedTime(detail.posted_time, detail.created_at)}
-            />
-            <DetailField label="Field" value={detail.field} />
-            <DetailField label="Industries" value={detail.industries} />
-            <DetailField label="Source" value={detail.job_origin} />
-            <DetailField label="Name" value={detail.name} />
-            <DetailField label="Omit words" value={detail.omit_words} />
-            <DetailField
-              label="Company website"
-              value={detail.company_website ?? detail.company_url}
-              href={
-                detail.company_website?.startsWith("http")
-                  ? detail.company_website
-                  : detail.company_website
-                    ? `https://${detail.company_website}`
-                    : detail.company_url
-              }
-            />
-            <DetailField label="Job URL" value="View listing" href={detail.url} />
-          </div>
-
-          {detail.about_job ? (
-            <section className="job-detail-section">
-              <h3 className="job-detail-section-title">About the role</h3>
-              <p className="job-detail-prose">{detail.about_job}</p>
-            </section>
-          ) : null}
-        </div>
+        </>
       ) : null}
     </aside>
   );
