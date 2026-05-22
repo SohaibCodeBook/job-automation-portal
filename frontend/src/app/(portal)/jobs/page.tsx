@@ -1,5 +1,5 @@
-import { ScrappedJobsPlaceholder } from "@/components/jobs/scrapped-jobs-placeholder";
+import { ScrappedJobsPage } from "@/components/jobs/scrapped-jobs-page";
 
-export default function ScrappedJobsPage() {
-  return <ScrappedJobsPlaceholder />;
+export default function JobsPage() {
+  return <ScrappedJobsPage />;
 }

@@ -21,6 +21,7 @@ def _to_list_item(listing: JobListing) -> dict[str, Any]:
         "posted_time": listing.posted_time,
         "employment_type": listing.employment_type,
         "work_type": listing.work_type,
+        "field": listing.field,
         "job_origin": listing.job_origin,
         "created_at": listing.created_at,
     }

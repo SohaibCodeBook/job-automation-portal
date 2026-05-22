@@ -20,6 +20,7 @@ class JobListingListItem(BaseModel):
     posted_time: str | None = None
     employment_type: str | None = None
     work_type: str | None = None
+    field: str | None = None
     job_origin: str | None = None
     created_at: datetime | None = None
 
