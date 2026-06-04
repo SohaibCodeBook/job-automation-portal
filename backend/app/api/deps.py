@@ -8,6 +8,7 @@ from app.db.session import AsyncSessionLocal
 from app.services.auth_service import AuthService
 from app.services.job_application_service import JobApplicationService
 from app.services.job_listing_service import JobListingService
+from app.services.resume_rebuild_service import ResumeRebuildService
 
 
 async def verify_internal_api_key(
@@ -44,3 +45,9 @@ async def get_job_listing_service(
     session: AsyncSession = Depends(get_db_session),
 ) -> AsyncGenerator[JobListingService, None]:
     yield JobListingService(session)
+
+
+async def get_resume_rebuild_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> AsyncGenerator[ResumeRebuildService, None]:
+    yield ResumeRebuildService(session)

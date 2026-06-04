@@ -56,6 +56,19 @@ class Settings(BaseSettings):
         description="Comma-separated allowed resume extensions.",
     )
 
+    RESUME_EXTRACTOR_BASE_URL: str = Field(
+        default="http://localhost:4002",
+        description="Base URL for the resume text extractor service.",
+    )
+    RESUME_REBUILDER_BASE_URL: str = Field(
+        default="http://localhost:3001",
+        description="Base URL for the resume rebuilder service.",
+    )
+    RESUME_HTTP_TIMEOUT_SECONDS: float = Field(
+        default=120.0,
+        description="HTTP timeout when calling resume extract/rebuild services.",
+    )
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def split_origins(cls, value: str | list[str]) -> str:

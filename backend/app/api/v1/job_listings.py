@@ -4,9 +4,9 @@ import uuid
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
-from app.api.deps import get_job_listing_service
+from app.api.deps import get_job_listing_service, get_resume_rebuild_service
 from app.core.security import get_current_user_id
 from app.lib.listing_date_filter import ListingDateFilter
 from app.schemas.job_listing_responses import (
@@ -19,8 +19,17 @@ from app.services.job_listing_service import (
     JobListingNotFoundError,
     JobListingService,
 )
+from app.services.resume_rebuild_service import (
+    ResumeRebuildService,
+    ResumeRebuildServiceError,
+    ResumeRebuildValidationError,
+)
 
 router = APIRouter(prefix="/job-listings", tags=["job-listings"])
+
+_DOCX_MEDIA = (
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
 
 
 @router.get(
@@ -78,6 +87,54 @@ async def list_job_listings(
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.post(
+    "/{listing_id}/rebuild-resume",
+    response_model=None,
+    responses={
+        200: {
+            "content": {_DOCX_MEDIA: {}},
+            "description": "Tailored resume docx download.",
+        },
+        400: {"model": JobListingErrorResponse},
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+        502: {"model": JobListingErrorResponse},
+    },
+)
+async def rebuild_job_listing_resume(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: ResumeRebuildService = Depends(get_resume_rebuild_service),
+) -> Response:
+    try:
+        docx_bytes, filename = await service.rebuild_for_listing(
+            user_id,
+            listing_id,
+        )
+        return Response(
+            content=docx_bytes,
+            media_type=_DOCX_MEDIA,
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    except JobListingNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job listing not found.",
+        ) from None
+    except ResumeRebuildValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    except ResumeRebuildServiceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(exc),
         ) from exc
 

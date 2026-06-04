@@ -12,6 +12,8 @@ import {
   Star,
 } from "lucide-react";
 
+import { useSession } from "next-auth/react";
+
 import { JobCard } from "@/components/jobs/job-card";
 import { JobDetailPanel } from "@/components/jobs/job-detail-panel";
 import { JobListEmpty } from "@/components/jobs/job-list-empty";
@@ -22,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
 import { useJobListings } from "@/hooks/use-job-listings";
+import { rebuildJobListingResume } from "@/lib/api/job-listings";
 import {
   DATE_FILTER_OPTIONS,
   filterJobListings,
@@ -32,6 +35,7 @@ import { cn } from "@/lib/utils";
 import type { JobListingDateFilter } from "@/types/job-listing";
 
 export function ScrappedJobsPage() {
+  const { data: session } = useSession();
   const [dateFilter, setDateFilter] = React.useState<JobListingDateFilter>("all");
   const [listedOn, setListedOn] = React.useState("");
 
@@ -112,6 +116,17 @@ export function ScrappedJobsPage() {
       setListedOn("");
     }
   }
+
+  const handleRebuildResume = React.useCallback(
+    async (listingId: string): Promise<Blob | null> => {
+      const token = session?.accessToken;
+      if (!token) {
+        throw new Error("Sign in to rebuild your resume.");
+      }
+      return rebuildJobListingResume(token, listingId);
+    },
+    [session?.accessToken],
+  );
 
   return (
     <div className={cn("scrapped-jobs-layout", hasDetail && "scrapped-jobs-layout--split")}>
@@ -284,6 +299,7 @@ export function ScrappedJobsPage() {
                 job={job}
                 selected={selectedId === job.id}
                 activeDateFilter={dateFilter}
+                onRebuildResume={handleRebuildResume}
                 onSelect={() => setSelectedId(job.id)}
               />
             ))}
