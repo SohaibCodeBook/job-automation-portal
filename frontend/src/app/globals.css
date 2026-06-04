@@ -1215,6 +1215,11 @@ html.dark .portal-shell .portal-tab[data-active="true"] {
   align-items: flex-end;
   gap: 0.5rem;
   flex-shrink: 0;
+  min-width: min(100%, 11.5rem);
+}
+
+.job-card-action-row {
+  width: 100%;
 }
 
 .job-card-salary {
@@ -1450,6 +1455,17 @@ html.dark .portal-shell .job-card-tag {
 
 html.dark .portal-shell .job-card-salary {
   color: #10b981;
+}
+
+html.dark .portal-shell .job-card-rebuild-btn {
+  border-color: color-mix(in oklab, var(--border) 85%, white 15%);
+  background: color-mix(in oklab, var(--portal-card-elevated, var(--card)) 92%, white 8%);
+  color: var(--foreground);
+}
+
+html.dark .portal-shell .job-card-rebuild-btn:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--portal-accent) 45%, var(--border));
+  background: color-mix(in oklab, var(--portal-accent) 12%, var(--portal-card-elevated, var(--card)));
 }
 
 html.dark .portal-shell .job-detail-panel {
