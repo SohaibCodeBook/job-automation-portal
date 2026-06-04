@@ -12,11 +12,12 @@ import {
   formatListingCreatedAtAbsolute,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
-import type { JobListingDetail } from "@/types/job-listing";
+import type { JobListingDateFilter, JobListingDetail } from "@/types/job-listing";
 
 type JobDetailPanelProps = {
   listingId: string;
   onClose: () => void;
+  activeDateFilter?: JobListingDateFilter;
   className?: string;
 };
 
@@ -106,6 +107,7 @@ function DetailField({
 export function JobDetailPanel({
   listingId,
   onClose,
+  activeDateFilter,
   className,
 }: JobDetailPanelProps) {
   const { data: session } = useSession();
@@ -254,7 +256,9 @@ export function JobDetailPanel({
               <DetailField label="Work type" value={detail.work_type} />
               <DetailField
                 label="Listed"
-                value={formatListingCreatedAt(detail.created_at)}
+                value={formatListingCreatedAt(detail.created_at, {
+                  activeDateFilter,
+                })}
                 valueTitle={formatListingCreatedAtAbsolute(detail.created_at)}
               />
               <DetailField label="Field" value={detail.field} />

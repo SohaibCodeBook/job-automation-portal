@@ -10,15 +10,21 @@ import {
   isNewToday,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
-import type { JobListingListItem } from "@/types/job-listing";
+import type { JobListingDateFilter, JobListingListItem } from "@/types/job-listing";
 
 type JobCardProps = {
   job: JobListingListItem;
   selected?: boolean;
+  activeDateFilter?: JobListingDateFilter;
   onSelect: () => void;
 };
 
-export function JobCard({ job, selected = false, onSelect }: JobCardProps) {
+export function JobCard({
+  job,
+  selected = false,
+  activeDateFilter,
+  onSelect,
+}: JobCardProps) {
   const initials = companyInitials(job.company);
   const isNew = isNewToday(job.created_at);
   const tags = [
@@ -77,7 +83,10 @@ export function JobCard({ job, selected = false, onSelect }: JobCardProps) {
               : undefined
           }
         >
-          {[job.field, formatListingCreatedAt(job.created_at)]
+          {[
+            job.field,
+            formatListingCreatedAt(job.created_at, { activeDateFilter }),
+          ]
             .filter(Boolean)
             .join(" · ")}
         </p>

@@ -283,6 +283,7 @@ export function ScrappedJobsPage() {
                 key={job.id}
                 job={job}
                 selected={selectedId === job.id}
+                activeDateFilter={dateFilter}
                 onSelect={() => setSelectedId(job.id)}
               />
             ))}
@@ -326,6 +327,7 @@ export function ScrappedJobsPage() {
           />
           <JobDetailPanel
             listingId={selectedId}
+            activeDateFilter={dateFilter}
             onClose={() => setSelectedId(null)}
           />
         </>
