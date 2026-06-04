@@ -3,10 +3,17 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.job_application_repository import JobApplicationRepository
 from app.schemas.job_application import JobApplicationSubmissionRequest
+from app.services.resume_storage import (
+    ResumeStorageError,
+    read_upload_file,
+    save_source_resume,
+)
+from app.core.config import settings
 
 
 def _join_semicolon(values: list[str] | None) -> str | None:
@@ -53,7 +60,8 @@ def submission_to_row(body: JobApplicationSubmissionRequest) -> dict[str, Any]:
         "selected_states": _join_semicolon(body.selected_states),
         "selected_regions": body.selected_regions,
         "pay_range_filter": pay_range_filter,
-        "resume_url": str(body.resume_url),
+        "resume_url": str(body.resume_url) if body.resume_url else None,
+        "resume_storage_key": None,
         "limit_jobs": body.limit_jobs,
     }
 
@@ -92,6 +100,7 @@ def _to_detail(app: Any) -> dict[str, Any]:
         "selected_regions": app.selected_regions,
         "pay_range_filter": app.pay_range_filter,
         "resume_url": app.resume_url,
+        "resume_storage_key": app.resume_storage_key,
         "limit_jobs": app.limit_jobs,
         "created_at": app.created_at,
     }
@@ -101,19 +110,54 @@ class JobApplicationNotFoundError(Exception):
     pass
 
 
+class JobApplicationValidationError(ValueError):
+    pass
+
+
 class JobApplicationService:
     def __init__(self, session: AsyncSession) -> None:
         self._repo = JobApplicationRepository(session)
         self._session = session
 
     async def create(
-        self, *, user_id: uuid.UUID, body: JobApplicationSubmissionRequest
+        self,
+        *,
+        user_id: uuid.UUID,
+        body: JobApplicationSubmissionRequest,
+        resume_upload: UploadFile | None = None,
     ) -> uuid.UUID:
+        if resume_upload is None and body.resume_url is None:
+            raise JobApplicationValidationError(
+                "Upload a resume file or provide an optional resume URL."
+            )
+
         try:
             row = submission_to_row(body)
             application_id = await self._repo.create(user_id=user_id, row=row)
+
+            if resume_upload is not None:
+                filename = resume_upload.filename or "resume.pdf"
+                file_bytes = await read_upload_file(
+                    resume_upload,
+                    max_bytes=settings.RESUME_MAX_BYTES,
+                )
+                storage_key = save_source_resume(
+                    user_id=user_id,
+                    application_id=application_id,
+                    data=file_bytes,
+                    original_filename=filename,
+                )
+                await self._repo.update_resume_storage_key(
+                    user_id=user_id,
+                    application_id=application_id,
+                    storage_key=storage_key,
+                )
+
             await self._session.commit()
             return application_id
+        except (ResumeStorageError, JobApplicationValidationError):
+            await self._session.rollback()
+            raise
         except Exception:
             await self._session.rollback()
             raise

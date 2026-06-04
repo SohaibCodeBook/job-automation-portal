@@ -28,3 +28,19 @@ export const requiredUrl = z
   .trim()
   .min(1, validationMessages.required)
   .url(validationMessages.invalidUrl);
+
+export const optionalUrl = z
+  .string()
+  .trim()
+  .refine(
+    (value) => {
+      if (!value) return true;
+      try {
+        const u = new URL(value);
+        return u.protocol === "http:" || u.protocol === "https:";
+      } catch {
+        return false;
+      }
+    },
+    { message: validationMessages.invalidUrl },
+  );

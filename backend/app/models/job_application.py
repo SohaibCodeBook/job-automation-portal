@@ -32,6 +32,7 @@ class JobApplication(Base):
     selected_cities: Mapped[str | None] = mapped_column(Text, nullable=True)
     selected_states: Mapped[str | None] = mapped_column(Text, nullable=True)
     resume_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resume_storage_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     limit_jobs: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=False), nullable=True

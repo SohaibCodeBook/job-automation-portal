@@ -55,3 +55,16 @@ class JobApplicationRepository:
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def update_resume_storage_key(
+        self,
+        *,
+        user_id: uuid.UUID,
+        application_id: uuid.UUID,
+        storage_key: str,
+    ) -> None:
+        app = await self.get_for_user(user_id, application_id)
+        if app is None:
+            raise ValueError("Job application not found.")
+        app.resume_storage_key = storage_key
+        await self._session.flush()

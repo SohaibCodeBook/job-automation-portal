@@ -1,3 +1,7 @@
+# Local resume uploads (wrapper backend)
+backend/uploads/
+uploads/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

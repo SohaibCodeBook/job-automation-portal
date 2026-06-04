@@ -21,6 +21,8 @@ export function useJobSearchSpecificationsForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeFileError, setResumeFileError] = useState<string | null>(null);
 
   const form = useForm<JobSearchFormValues>({
     resolver: createZodResolver(jobSearchFormSchema) as unknown as Resolver<JobSearchFormValues>,
@@ -32,6 +34,13 @@ export function useJobSearchSpecificationsForm() {
     setIsSubmitting(true);
     setSubmitMessage(null);
     setSubmitError(null);
+    setResumeFileError(null);
+
+    if (!resumeFile) {
+      setResumeFileError("Upload a resume file (PDF, Word, or RTF).");
+      setIsSubmitting(false);
+      return;
+    }
 
     const accessToken = session?.accessToken;
     if (sessionStatus === "loading") {
@@ -47,9 +56,10 @@ export function useJobSearchSpecificationsForm() {
 
     try {
       const payload = serializeJobApplicationForApi(values);
-      const result = await submitJobApplication(payload, accessToken);
+      const result = await submitJobApplication(payload, accessToken, resumeFile);
       setSubmitMessage(result.message ?? "Job application created successfully.");
       form.reset(defaultJobSearchFormValues);
+      setResumeFile(null);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Submission failed.";
@@ -65,5 +75,8 @@ export function useJobSearchSpecificationsForm() {
     isSubmitting,
     submitMessage,
     submitError,
+    resumeFile,
+    setResumeFile,
+    resumeFileError,
   };
 }

@@ -60,7 +60,7 @@ export const JOB_SEARCH_WIZARD_STEPS: WizardStep[] = [
   {
     id: "other-details",
     title: "Step 6 — Other Details",
-    description: "Finalize inclusion rules, resume URL, and fixed job limit.",
+    description: "Upload your resume, optional filters, and fixed job limit.",
     fields: ["omitWords", "mustInclude", "resumeUrl", "limitJobs"],
   },
 ];

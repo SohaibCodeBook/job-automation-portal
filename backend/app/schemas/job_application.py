@@ -105,9 +105,9 @@ class JobApplicationSubmissionRequest(BaseModel):
         description="Per-region pay when remote is true; null when remote is false.",
     )
 
-    resume_url: HttpUrl = Field(
-        ...,
-        description="Public or signed URL to the applicant resume.",
+    resume_url: HttpUrl | None = Field(
+        default=None,
+        description="Optional public or signed URL to the applicant resume.",
     )
 
     limit_jobs: Literal[25] = Field(

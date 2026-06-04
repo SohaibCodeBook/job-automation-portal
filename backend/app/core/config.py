@@ -43,6 +43,19 @@ class Settings(BaseSettings):
         description="Comma-separated list of allowed origins.",
     )
 
+    RESUME_UPLOAD_ROOT: str = Field(
+        default="uploads",
+        description="Local directory for uploaded resume files (GCS later).",
+    )
+    RESUME_MAX_BYTES: int = Field(
+        default=10 * 1024 * 1024,
+        description="Maximum resume upload size in bytes.",
+    )
+    RESUME_ALLOWED_EXTENSIONS: str = Field(
+        default=".pdf,.doc,.docx,.rtf",
+        description="Comma-separated allowed resume extensions.",
+    )
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def split_origins(cls, value: str | list[str]) -> str:

@@ -6,7 +6,7 @@ import {
   optionalStringArray,
   requiredStringArray,
   requiredText,
-  requiredUrl,
+  optionalUrl,
   validationMessages,
 } from "@/schemas/shared";
 
@@ -67,12 +67,13 @@ export const jobSearchFormSchema = z
     payRangeFilter: z
       .record(z.string(), payRangeEntrySchema)
       .default({}),
-    resumeUrl: requiredUrl,
+    resumeUrl: optionalUrl,
     limitJobs: z.literal(JOB_LIMIT, {
       message: validationMessages.limitJobsFixed,
     }),
   })
   .superRefine((values, ctx) => {
+    // resume file is validated on submit (see useJobSearchSpecificationsForm)
     const hybridCities = values.selectedCities ?? [];
     const hybridStates = values.selectedStates ?? [];
 
