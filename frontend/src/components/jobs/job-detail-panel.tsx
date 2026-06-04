@@ -6,7 +6,11 @@ import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { getJobListing } from "@/lib/api/job-listings";
-import { companyInitials, displayPostedTime } from "@/lib/jobs-display";
+import {
+  companyInitials,
+  formatListingCreatedAt,
+  formatListingCreatedAtAbsolute,
+} from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
 import type { JobListingDetail } from "@/types/job-listing";
 
@@ -68,10 +72,12 @@ function DetailField({
   label,
   value,
   href,
+  valueTitle,
 }: {
   label: string;
   value: string | null | undefined;
   href?: string | null;
+  valueTitle?: string;
 }) {
   const display = value?.trim() || "—";
   return (
@@ -83,12 +89,15 @@ function DetailField({
           target="_blank"
           rel="noopener noreferrer"
           className="job-detail-field-link"
+          title={valueTitle}
         >
           {display}
           <ExternalLink className="size-3.5 shrink-0" aria-hidden />
         </a>
       ) : (
-        <p className="job-detail-field-value">{display}</p>
+        <p className="job-detail-field-value" title={valueTitle}>
+          {display}
+        </p>
       )}
     </div>
   );
@@ -244,8 +253,9 @@ export function JobDetailPanel({
               <DetailField label="Employment type" value={detail.employment_type} />
               <DetailField label="Work type" value={detail.work_type} />
               <DetailField
-                label="Posted"
-                value={displayPostedTime(detail.posted_time, detail.created_at)}
+                label="Listed"
+                value={formatListingCreatedAt(detail.created_at)}
+                valueTitle={formatListingCreatedAtAbsolute(detail.created_at)}
               />
               <DetailField label="Field" value={detail.field} />
               <DetailField label="Industries" value={detail.industries} />

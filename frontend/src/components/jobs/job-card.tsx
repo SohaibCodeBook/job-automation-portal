@@ -5,7 +5,8 @@ import { Bookmark, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   companyInitials,
-  displayPostedTime,
+  formatListingCreatedAt,
+  formatListingCreatedAtAbsolute,
   isNewToday,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
@@ -68,8 +69,15 @@ export function JobCard({ job, selected = false, onSelect }: JobCardProps) {
             ))}
           </div>
         ) : null}
-        <p className="job-card-footer text-xs text-muted-foreground">
-          {[job.field, displayPostedTime(job.posted_time, job.created_at)]
+        <p
+          className="job-card-footer text-xs text-muted-foreground"
+          title={
+            job.created_at
+              ? formatListingCreatedAtAbsolute(job.created_at)
+              : undefined
+          }
+        >
+          {[job.field, formatListingCreatedAt(job.created_at)]
             .filter(Boolean)
             .join(" · ")}
         </p>
