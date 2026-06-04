@@ -30,3 +30,22 @@ export type JobListingListResponse = {
   page: number;
   page_size: number;
 };
+
+/** Matches backend `ListingDateFilter` query param. */
+export type JobListingDateFilter =
+  | "all"
+  | "today"
+  | "last_7_days"
+  | "last_2_weeks"
+  | "last_30_days"
+  | "older"
+  | "on_date";
+
+export type JobListingDateCounts = {
+  all: number;
+  today: number;
+  last_7_days: number;
+  last_2_weeks: number;
+  last_30_days: number;
+  older: number;
+};

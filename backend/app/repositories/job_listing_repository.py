@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.lib.listing_date_filter import (
+    ListingDateFilter,
+    created_at_filter_clauses,
+)
 from app.models.job_application import JobApplication
 from app.models.job_listing import JobListing
 
@@ -18,13 +23,27 @@ class JobListingRepository:
         return JobListing.job_application_id == JobApplication.id
 
     @staticmethod
-    def _filters(
-        user_id: uuid.UUID, job_application_id: uuid.UUID | None = None
+    def _base_clauses(
+        user_id: uuid.UUID,
+        job_application_id: uuid.UUID | None = None,
     ) -> list:
         clauses = [JobApplication.user_id == user_id]
         if job_application_id is not None:
             clauses.append(JobListing.job_application_id == job_application_id)
         return clauses
+
+    def _all_clauses(
+        self,
+        user_id: uuid.UUID,
+        *,
+        job_application_id: uuid.UUID | None = None,
+        date_filter: ListingDateFilter | None = None,
+        listed_on: date | None = None,
+    ) -> list:
+        return [
+            *self._base_clauses(user_id, job_application_id),
+            *created_at_filter_clauses(date_filter, listed_on),
+        ]
 
     async def list_for_user(
         self,
@@ -33,23 +52,30 @@ class JobListingRepository:
         page: int,
         page_size: int,
         job_application_id: uuid.UUID | None = None,
+        date_filter: ListingDateFilter | None = None,
+        listed_on: date | None = None,
     ) -> tuple[list[JobListing], int]:
         offset = (page - 1) * page_size
         join = self._join_on_application()
-        filters = self._filters(user_id, job_application_id)
+        clauses = self._all_clauses(
+            user_id,
+            job_application_id=job_application_id,
+            date_filter=date_filter,
+            listed_on=listed_on,
+        )
 
         count_stmt = (
             select(func.count())
             .select_from(JobListing)
             .join(JobApplication, join)
-            .where(*filters)
+            .where(*clauses)
         )
         total = int((await self._session.execute(count_stmt)).scalar_one())
 
         stmt = (
             select(JobListing)
             .join(JobApplication, join)
-            .where(*filters)
+            .where(*clauses)
             .order_by(
                 JobListing.created_at.desc().nullslast(),
                 JobListing.id.desc(),
@@ -59,6 +85,39 @@ class JobListingRepository:
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all()), total
+
+    async def count_by_date_filters(
+        self,
+        user_id: uuid.UUID,
+        *,
+        job_application_id: uuid.UUID | None = None,
+    ) -> dict[str, int]:
+        """Totals per date bucket across all listings for the user."""
+        counts: dict[str, int] = {}
+        for bucket in (
+            ListingDateFilter.ALL,
+            ListingDateFilter.TODAY,
+            ListingDateFilter.LAST_7_DAYS,
+            ListingDateFilter.LAST_2_WEEKS,
+            ListingDateFilter.LAST_30_DAYS,
+            ListingDateFilter.OLDER,
+        ):
+            join = self._join_on_application()
+            clauses = self._all_clauses(
+                user_id,
+                job_application_id=job_application_id,
+                date_filter=bucket,
+            )
+            stmt = (
+                select(func.count())
+                .select_from(JobListing)
+                .join(JobApplication, join)
+                .where(*clauses)
+            )
+            counts[bucket.value] = int(
+                (await self._session.execute(stmt)).scalar_one()
+            )
+        return counts
 
     async def get_for_user(
         self, user_id: uuid.UUID, listing_id: uuid.UUID

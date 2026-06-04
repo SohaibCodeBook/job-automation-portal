@@ -32,6 +32,15 @@ class JobListingListResponse(BaseModel):
     page_size: int = Field(..., ge=1, le=100)
 
 
+class JobListingDateCountsResponse(BaseModel):
+    all: int
+    today: int
+    last_7_days: int
+    last_2_weeks: int
+    last_30_days: int
+    older: int
+
+
 class JobListingDetailResponse(BaseModel):
     id: str
     job_application_id: str

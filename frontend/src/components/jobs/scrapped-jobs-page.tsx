@@ -23,26 +23,35 @@ import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
 import { useJobListings } from "@/hooks/use-job-listings";
 import {
+  DATE_FILTER_OPTIONS,
   filterJobListings,
   formatSyncedLabel,
-  isNewToday,
   uniqueValues,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
-
-type JobTabId = "all" | "new_today";
-
-const TABS: { id: JobTabId; label: string }[] = [
-  { id: "all", label: "All Jobs" },
-  { id: "new_today", label: "New Today" },
-];
+import type { JobListingDateFilter } from "@/types/job-listing";
 
 export function ScrappedJobsPage() {
-  const { items, total, page, pageSize, isLoading, error, refetch, setPage } =
-    useJobListings();
+  const [dateFilter, setDateFilter] = React.useState<JobListingDateFilter>("all");
+  const [listedOn, setListedOn] = React.useState("");
+
+  const {
+    items,
+    total,
+    page,
+    pageSize,
+    isLoading,
+    error,
+    dateCounts,
+    refetch,
+    setPage,
+  } = useJobListings({
+    dateFilter,
+    listedOn: dateFilter === "on_date" ? listedOn : undefined,
+  });
+
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeTab, setActiveTab] = React.useState<JobTabId>("all");
   const [typeFilter, setTypeFilter] = React.useState("");
   const [locationFilter, setLocationFilter] = React.useState("");
 
@@ -55,16 +64,10 @@ export function ScrappedJobsPage() {
     return latest;
   }, [items]);
 
-  const newTodayCount = React.useMemo(
-    () => items.filter((j) => isNewToday(j.created_at)).length,
-    [items],
-  );
+  const newTodayCount = dateCounts.today;
 
   const filteredItems = React.useMemo(() => {
     let list = filterJobListings(items, searchQuery);
-    if (activeTab === "new_today") {
-      list = list.filter((j) => isNewToday(j.created_at));
-    }
     if (typeFilter) {
       list = list.filter(
         (j) =>
@@ -75,7 +78,7 @@ export function ScrappedJobsPage() {
       list = list.filter((j) => j.location === locationFilter);
     }
     return list;
-  }, [items, searchQuery, activeTab, typeFilter, locationFilter]);
+  }, [items, searchQuery, typeFilter, locationFilter]);
 
   const employmentTypes = React.useMemo(
     () => uniqueValues(items, "employment_type"),
@@ -92,11 +95,23 @@ export function ScrappedJobsPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const hasDetail = selectedId != null;
 
+  const hasClientFilters = Boolean(searchQuery || typeFilter || locationFilter);
+  const hasDateFilter = dateFilter !== "all";
+  const awaitingSpecificDate = dateFilter === "on_date" && !listedOn;
+
   React.useEffect(() => {
     if (selectedId && !items.some((j) => j.id === selectedId)) {
       setSelectedId(null);
     }
   }, [items, selectedId]);
+
+  function onDateFilterChange(value: string) {
+    const next = value as JobListingDateFilter;
+    setDateFilter(next);
+    if (next !== "on_date") {
+      setListedOn("");
+    }
+  }
 
   return (
     <div className={cn("scrapped-jobs-layout", hasDetail && "scrapped-jobs-layout--split")}>
@@ -215,24 +230,33 @@ export function ScrappedJobsPage() {
               </option>
             ))}
           </select>
+          <select
+            className="portal-filter-select"
+            value={dateFilter}
+            onChange={(e) => onDateFilterChange(e.target.value)}
+            aria-label="Filter by date listed"
+          >
+            {DATE_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {dateFilter === "on_date" ? (
+            <input
+              type="date"
+              className="portal-filter-select h-9 min-w-[10.5rem] px-2"
+              value={listedOn}
+              onChange={(e) => setListedOn(e.target.value)}
+              aria-label="Listed on specific date"
+            />
+          ) : null}
         </div>
 
-        <nav className="portal-tabs" aria-label="Job filters">
-          {TABS.map((tab) => {
-            const count =
-              tab.id === "all" ? total : newTodayCount;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className="portal-tab"
-                data-active={activeTab === tab.id ? "true" : undefined}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label} ({count})
-              </button>
-            );
-          })}
+        <nav className="portal-tabs mb-4" aria-label="Job list">
+          <span className="portal-tab" data-active="true">
+            All Jobs ({total})
+          </span>
         </nav>
 
         {isLoading ? <JobListSkeleton /> : null}
@@ -240,11 +264,19 @@ export function ScrappedJobsPage() {
           <JobListError message={error} onRetry={refetch} />
         ) : null}
 
-        {!isLoading && !error && filteredItems.length === 0 ? (
-          <JobListEmpty filtered={Boolean(searchQuery || typeFilter || locationFilter || activeTab !== "all")} />
+        {!isLoading && !error && awaitingSpecificDate ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Choose a date to see listings from that day.
+          </p>
         ) : null}
 
-        {!isLoading && !error && filteredItems.length > 0 ? (
+        {!isLoading && !error && !awaitingSpecificDate && filteredItems.length === 0 ? (
+          <JobListEmpty
+            filtered={hasClientFilters || hasDateFilter}
+          />
+        ) : null}
+
+        {!isLoading && !error && !awaitingSpecificDate && filteredItems.length > 0 ? (
           <div className="job-list space-y-3">
             {filteredItems.map((job) => (
               <JobCard
@@ -257,7 +289,7 @@ export function ScrappedJobsPage() {
           </div>
         ) : null}
 
-        {!isLoading && !error && totalPages > 1 ? (
+        {!isLoading && !error && !awaitingSpecificDate && totalPages > 1 ? (
           <div className="mt-6 flex items-center justify-center gap-3">
             <Button
               variant="outline"
