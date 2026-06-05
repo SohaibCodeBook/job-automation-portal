@@ -35,6 +35,7 @@ import {
   HINT_SELECTED_INDUSTRIES,
 } from "@/constants/form-field-hints";
 import { JOB_SEARCH_WIZARD_STEPS, WIZARD_STEP_CHAIN_LABELS } from "@/constants/job-search-wizard";
+import { WIZARD_SECTION_ACCENTS } from "@/constants/wizard-section-accents";
 import { WIZARD_STEP_ICONS } from "@/constants/wizard-step-icons";
 import {
   computeWizardStepCompletion,
@@ -516,6 +517,7 @@ export function JobSpecsWizardPage() {
                 description={step.description}
                 sectionNumber={index + 1}
                 sectionComplete={completion[index] === true}
+                sectionAccent={WIZARD_SECTION_ACCENTS[step.id] ?? "blue"}
                 icon={
                   StepIcon ? <StepIcon className="size-5" strokeWidth={1.75} /> : undefined
                 }

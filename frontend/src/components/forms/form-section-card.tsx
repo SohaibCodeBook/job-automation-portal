@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Check } from "lucide-react";
 
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { WizardSectionAccent } from "@/constants/wizard-section-accents";
 import { cn } from "@/lib/utils";
 
 type FormSectionCardProps = {
@@ -17,11 +17,13 @@ type FormSectionCardProps = {
   className?: string;
   contentClassName?: string;
   action?: React.ReactNode;
-  /** Optional icon (e.g. Lucide) in the header tile when the section is not yet complete. */
+  /** Optional icon (e.g. Lucide) in the header tile. */
   icon?: React.ReactNode;
-  /** When true, the tile shows a checkmark on the title gradient teal (same as main page title). */
+  /** Color accent for the section icon tile. */
+  sectionAccent?: WizardSectionAccent;
+  /** When true, shows a green "Complete" status pill. */
   sectionComplete?: boolean;
-  /** 1-based index shown as a two-digit label (e.g. 03) on the right, like wizard sections. */
+  /** 1-based index shown as a two-digit label (e.g. 03) on the right. */
   sectionNumber?: number;
   /** Anchor id for scroll-into-view from the steps chain (`section-${id}`). */
   sectionId?: string;
@@ -35,6 +37,7 @@ export function FormSectionCard({
   contentClassName,
   action,
   icon,
+  sectionAccent = "blue",
   sectionComplete = false,
   sectionNumber,
   sectionId,
@@ -47,57 +50,53 @@ export function FormSectionCard({
   const showStatusBadge =
     sectionNumber !== undefined || sectionComplete === true;
 
-  const showIconTile = Boolean(icon) || sectionComplete;
-
   return (
     <Card
       id={sectionId}
       className={cn(
-        "w-full overflow-visible",
+        "portal-spec-section-card w-full overflow-visible",
         sectionId && "scroll-mt-28",
         className,
       )}
     >
-      <CardHeader className="border-b border-border px-4 pb-4 group-data-[size=sm]/card:px-3">
+      <CardHeader className="portal-spec-section-header border-b px-4 pb-4 group-data-[size=sm]/card:px-3">
         <div className="flex items-start gap-3 sm:gap-4">
-          {showIconTile ? (
+          {icon ? (
             <div
-              className={cn(
-                "portal-section-icon flex size-11 shrink-0 items-center justify-center rounded-lg shadow-sm ring-1 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-                sectionComplete
-                  ? "portal-section-icon--done bg-job-title-end text-white ring-black/15 dark:ring-white/25"
-                  : "portal-section-icon--pending bg-neutral-950 text-neutral-50 ring-black/20 dark:bg-neutral-900 dark:ring-white/10",
-              )}
+              className="portal-section-icon flex size-11 shrink-0 items-center justify-center rounded-xl [&_svg]:pointer-events-none [&_svg]:shrink-0"
+              data-accent={sectionAccent}
               aria-hidden
             >
-              {sectionComplete ? (
-                <Check className="size-5" strokeWidth={2.5} />
-              ) : (
-                icon
-              )}
+              {icon}
             </div>
           ) : null}
           <div className="min-w-0 flex-1 space-y-1">
-            <CardTitle>{title}</CardTitle>
-            {description ? <CardDescription>{description}</CardDescription> : null}
-          </div>
-          {sectionLabel !== null || action || showStatusBadge ? (
-            <div className="flex shrink-0 flex-col items-end gap-2">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <CardTitle className="portal-spec-section-title">{title}</CardTitle>
               {showStatusBadge ? (
                 sectionComplete ? (
-                  <span className="rounded-full border border-[var(--job-title-gradient-end)]/35 bg-[color-mix(in_oklab,var(--job-title-gradient-end)_12%,white)] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-[var(--job-title-gradient-end)] dark:bg-[color-mix(in_oklab,var(--job-title-gradient-end)_28%,transparent)] dark:text-[color-mix(in_oklab,var(--job-title-gradient-end)_75%,white)]">
-                    Done
+                  <span className="portal-status-badge portal-status-badge--complete">
+                    <span className="portal-status-badge-dot" aria-hidden />
+                    Complete
                   </span>
                 ) : (
-                  <span className="rounded-full border border-amber-200/90 bg-[#fff4eb] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-[#8b4d1b] dark:border-amber-800/55 dark:bg-amber-950/40 dark:text-amber-200/95">
+                  <span className="portal-status-badge portal-status-badge--pending">
+                    <span className="portal-status-badge-dot" aria-hidden />
                     Pending
                   </span>
                 )
               ) : null}
+            </div>
+            {description ? (
+              <CardDescription className="portal-spec-section-desc">
+                {description}
+              </CardDescription>
+            ) : null}
+          </div>
+          {sectionLabel !== null || action ? (
+            <div className="flex shrink-0 flex-col items-end gap-2">
               {sectionLabel !== null ? (
-                <span className="text-sm font-medium tabular-nums tracking-tight text-muted-foreground">
-                  {sectionLabel}
-                </span>
+                <span className="portal-section-number">{sectionLabel}</span>
               ) : null}
               {action ? <div>{action}</div> : null}
             </div>
