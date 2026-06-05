@@ -150,7 +150,7 @@ export function JobCard({
               type="button"
               variant="outline"
               size="sm"
-              className="job-card-rebuild-btn gap-1.5 border-border"
+              className="job-card-rebuild-btn gap-1.5 border-0 bg-transparent shadow-none dark:border-0 dark:bg-transparent"
               disabled={isRebuilding}
               onClick={handleRebuildResume}
             >

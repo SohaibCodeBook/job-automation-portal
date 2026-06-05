@@ -1466,11 +1466,16 @@ html.dark .portal-shell .job-card-rebuild-beam-wrap {
   position: relative;
   display: inline-flex;
   border-radius: 0.375rem;
+  /* Keep 1px padding + overflow for original border-beam animation on hover */
   padding: 1px;
   overflow: hidden;
   isolation: isolate;
   vertical-align: middle;
-  background: rgb(255 255 255 / 0.08);
+  background: transparent;
+  border: none;
+  /* Normal: thin neat border only — no fill */
+  box-shadow: inset 0 0 0 1px #2a2d34;
+  transition: box-shadow 0.28s ease;
 }
 
 html.dark .portal-shell .job-card-rebuild-beam {
@@ -1500,6 +1505,7 @@ html.dark .portal-shell .job-card-rebuild-beam-wrap:hover:not(:has(.job-card-reb
 }
 
 html.dark .portal-shell .job-card-rebuild-beam-wrap:hover:not(:has(.job-card-rebuild-btn:disabled)) {
+  /* Replace inset border with outer glow; beam ring uses 1px padding slot */
   box-shadow:
     0 0 14px rgb(255 149 0 / 0.28),
     0 0 28px rgb(255 149 0 / 0.12);
@@ -1519,13 +1525,22 @@ html.dark .portal-shell .job-card-rebuild-btn {
   z-index: 1;
   border: none !important;
   border-radius: calc(0.375rem - 1px);
-  background: #12141a;
+  background: transparent !important;
+  background-color: transparent !important;
   color: #f3f4f6;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  box-shadow: none !important;
+}
+
+/* Override outline variant utilities (dark:bg-input/30) in normal state only */
+html.dark .portal-shell .job-card-rebuild-beam-wrap:not(:hover) .job-card-rebuild-btn:not(:disabled) {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 html.dark .portal-shell .job-card-rebuild-btn:hover:not(:disabled) {
-  background: #161922;
+  /* Opaque fill masks beam in center — only the border dot travels (original hover) */
+  background: #161922 !important;
+  background-color: #161922 !important;
   color: #fff;
   box-shadow: inset 0 0 0 1px rgb(255 149 0 / 0.22);
 }
