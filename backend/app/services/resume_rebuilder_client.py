@@ -6,6 +6,7 @@ import binascii
 import httpx
 
 from app.core.config import settings
+from app.services.resume_http import request_error_message, service_timeout
 
 
 class ResumeRebuilderError(Exception):
@@ -16,7 +17,7 @@ async def rebuild_resume_docx(*, resume_text: str, about_job: str) -> bytes:
     """POST JSON to the resume rebuilder service; returns decoded docx bytes."""
     base = settings.RESUME_REBUILDER_BASE_URL.rstrip("/")
     url = f"{base}/build-resume"
-    timeout = httpx.Timeout(settings.RESUME_HTTP_TIMEOUT_SECONDS)
+    timeout = service_timeout(settings.RESUME_REBUILDER_TIMEOUT_SECONDS)
 
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
@@ -26,7 +27,12 @@ async def rebuild_resume_docx(*, resume_text: str, about_job: str) -> bytes:
             )
         except httpx.RequestError as exc:
             raise ResumeRebuilderError(
-                "Resume rebuilder service is unavailable."
+                request_error_message(
+                    "Resume rebuilder",
+                    exc,
+                    timeout_seconds=settings.RESUME_REBUILDER_TIMEOUT_SECONDS,
+                    timeout_env_var="RESUME_REBUILDER_TIMEOUT_SECONDS",
+                )
             ) from exc
 
     if response.status_code != 200:

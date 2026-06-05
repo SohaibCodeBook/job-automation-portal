@@ -3,6 +3,7 @@ from __future__ import annotations
 import httpx
 
 from app.core.config import settings
+from app.services.resume_http import request_error_message, service_timeout
 
 
 class ResumeExtractorError(Exception):
@@ -13,7 +14,7 @@ async def extract_resume_text(*, file_bytes: bytes, filename: str) -> str:
     """POST multipart file to the resume extractor service."""
     base = settings.RESUME_EXTRACTOR_BASE_URL.rstrip("/")
     url = f"{base}/extract"
-    timeout = httpx.Timeout(settings.RESUME_HTTP_TIMEOUT_SECONDS)
+    timeout = service_timeout(settings.RESUME_EXTRACTOR_TIMEOUT_SECONDS)
 
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
@@ -23,7 +24,12 @@ async def extract_resume_text(*, file_bytes: bytes, filename: str) -> str:
             )
         except httpx.RequestError as exc:
             raise ResumeExtractorError(
-                "Resume extractor service is unavailable."
+                request_error_message(
+                    "Resume extractor",
+                    exc,
+                    timeout_seconds=settings.RESUME_EXTRACTOR_TIMEOUT_SECONDS,
+                    timeout_env_var="RESUME_EXTRACTOR_TIMEOUT_SECONDS",
+                )
             ) from exc
 
     if response.status_code != 200:

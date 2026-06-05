@@ -64,9 +64,13 @@ class Settings(BaseSettings):
         default="http://localhost:3001",
         description="Base URL for the resume rebuilder service.",
     )
-    RESUME_HTTP_TIMEOUT_SECONDS: float = Field(
+    RESUME_EXTRACTOR_TIMEOUT_SECONDS: float = Field(
         default=120.0,
-        description="HTTP timeout when calling resume extract/rebuild services.",
+        description="HTTP read timeout for resume extract (usually fast).",
+    )
+    RESUME_REBUILDER_TIMEOUT_SECONDS: float = Field(
+        default=1800.0,
+        description="HTTP read timeout for resume rebuild (can take 15–20+ minutes).",
     )
 
     @field_validator("CORS_ORIGINS", mode="before")
