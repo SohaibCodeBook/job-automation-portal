@@ -1457,15 +1457,108 @@ html.dark .portal-shell .job-card-salary {
   color: #10b981;
 }
 
+/* Rebuild resume — dark mode border beam (hover only) */
+.job-card-rebuild-icon-dot {
+  display: none;
+}
+
+html.dark .portal-shell .job-card-rebuild-beam-wrap {
+  position: relative;
+  display: inline-flex;
+  border-radius: 0.375rem;
+  padding: 1px;
+  overflow: hidden;
+  isolation: isolate;
+  vertical-align: middle;
+  background: rgb(255 255 255 / 0.08);
+}
+
+html.dark .portal-shell .job-card-rebuild-beam {
+  position: absolute;
+  inset: -120%;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 265deg,
+    rgb(255 149 0 / 0.12) 285deg,
+    #ff9500 300deg,
+    #ffb347 310deg,
+    #ff9500 320deg,
+    rgb(255 149 0 / 0.12) 335deg,
+    transparent 360deg
+  );
+  transition: opacity 0.28s ease;
+}
+
+html.dark .portal-shell .job-card-rebuild-beam-wrap:hover:not(:has(.job-card-rebuild-btn:disabled))
+  .job-card-rebuild-beam {
+  opacity: 1;
+  animation: job-rebuild-beam-spin 2.6s linear infinite;
+}
+
+html.dark .portal-shell .job-card-rebuild-beam-wrap:hover:not(:has(.job-card-rebuild-btn:disabled)) {
+  box-shadow:
+    0 0 14px rgb(255 149 0 / 0.28),
+    0 0 28px rgb(255 149 0 / 0.12);
+}
+
+@keyframes job-rebuild-beam-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 html.dark .portal-shell .job-card-rebuild-btn {
-  border-color: color-mix(in oklab, var(--border) 85%, white 15%);
-  background: color-mix(in oklab, var(--portal-card-elevated, var(--card)) 92%, white 8%);
-  color: var(--foreground);
+  position: relative;
+  z-index: 1;
+  border: none !important;
+  border-radius: calc(0.375rem - 1px);
+  background: #12141a;
+  color: #f3f4f6;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
 }
 
 html.dark .portal-shell .job-card-rebuild-btn:hover:not(:disabled) {
-  border-color: color-mix(in oklab, var(--portal-accent) 45%, var(--border));
-  background: color-mix(in oklab, var(--portal-accent) 12%, var(--portal-card-elevated, var(--card)));
+  background: #161922;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgb(255 149 0 / 0.22);
+}
+
+html.dark .portal-shell .job-card-rebuild-icon-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #c4845c;
+  box-shadow: 0 0 0 1px rgb(196 132 92 / 0.35);
+}
+
+html.dark .portal-shell .job-card-rebuild-icon-pen {
+  display: inline-block;
+}
+
+html.dark .portal-shell .job-card-rebuild-beam-wrap .job-card-rebuild-icon-dot {
+  display: inline-block;
+}
+
+html.dark .portal-shell .job-card-rebuild-beam-wrap .job-card-rebuild-icon-pen {
+  display: none;
+}
+
+html.dark
+  .portal-shell
+  .job-card-rebuild-beam-wrap:hover:not(:has(.job-card-rebuild-btn:disabled))
+  .job-card-rebuild-icon-dot {
+  background: #ff9500;
+  box-shadow:
+    0 0 6px rgb(255 149 0 / 0.85),
+    0 0 12px rgb(255 149 0 / 0.45);
 }
 
 html.dark .portal-shell .job-detail-panel {

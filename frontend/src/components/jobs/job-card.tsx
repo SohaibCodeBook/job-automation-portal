@@ -144,26 +144,33 @@ export function JobCard({
           <p className="job-card-salary">{job.pay_range}</p>
         ) : null}
         <div className="job-card-action-row flex flex-wrap items-center justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="job-card-rebuild-btn gap-1.5 border-border"
-            disabled={isRebuilding}
-            onClick={handleRebuildResume}
-          >
-            {isRebuilding ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                Rebuilding…
-              </>
-            ) : (
-              <>
-                <FilePenLine className="size-3.5" aria-hidden />
-                Rebuild resume
-              </>
-            )}
-          </Button>
+          <span className="job-card-rebuild-beam-wrap">
+            <span className="job-card-rebuild-beam" aria-hidden="true" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="job-card-rebuild-btn gap-1.5 border-border"
+              disabled={isRebuilding}
+              onClick={handleRebuildResume}
+            >
+              {isRebuilding ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                  Rebuilding…
+                </>
+              ) : (
+                <>
+                  <span className="job-card-rebuild-icon-dot" aria-hidden="true" />
+                  <FilePenLine
+                    className="job-card-rebuild-icon-pen size-3.5"
+                    aria-hidden
+                  />
+                  Rebuild resume
+                </>
+              )}
+            </Button>
+          </span>
           {downloadBlob ? (
             <Button
               type="button"
