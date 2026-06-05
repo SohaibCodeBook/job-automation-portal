@@ -73,7 +73,6 @@ export const jobSearchFormSchema = z
     }),
   })
   .superRefine((values, ctx) => {
-    // resume file is validated on submit (see useJobSearchSpecificationsForm)
     const hybridCities = values.selectedCities ?? [];
     const hybridStates = values.selectedStates ?? [];
 

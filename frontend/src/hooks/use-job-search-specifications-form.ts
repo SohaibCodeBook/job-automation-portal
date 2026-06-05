@@ -36,12 +36,6 @@ export function useJobSearchSpecificationsForm() {
     setSubmitError(null);
     setResumeFileError(null);
 
-    if (!resumeFile) {
-      setResumeFileError("Upload a resume file (PDF, Word, or RTF).");
-      setIsSubmitting(false);
-      return;
-    }
-
     const accessToken = session?.accessToken;
     if (sessionStatus === "loading") {
       setSubmitError("Session is still loading. Please try again.");

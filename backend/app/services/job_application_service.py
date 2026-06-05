@@ -126,11 +126,6 @@ class JobApplicationService:
         body: JobApplicationSubmissionRequest,
         resume_upload: UploadFile | None = None,
     ) -> uuid.UUID:
-        if resume_upload is None and body.resume_url is None:
-            raise JobApplicationValidationError(
-                "Upload a resume file or provide an optional resume URL."
-            )
-
         try:
             row = submission_to_row(body)
             application_id = await self._repo.create(user_id=user_id, row=row)

@@ -40,7 +40,6 @@ import { WIZARD_STEP_ICONS } from "@/constants/wizard-step-icons";
 import {
   computeWizardStepCompletion,
   getActiveWizardStepIndex,
-  isOtherDetailsStepComplete,
 } from "@/lib/job-search-wizard-progress";
 import { ResumeFileUpload } from "@/components/forms/resume-file-upload";
 import { useJobSearchSpecificationsForm } from "@/hooks/use-job-search-specifications-form";
@@ -100,16 +99,10 @@ export function JobSpecsWizardPage() {
 
   const formValues = useWatch({ control }) as JobSearchFormValues;
 
-  const completion = React.useMemo(() => {
-    const base = computeWizardStepCompletion(formValues, stepIds);
-    const otherIndex = stepIds.indexOf("other-details");
-    if (otherIndex >= 0) {
-      const next = [...base];
-      next[otherIndex] = isOtherDetailsStepComplete(formValues, resumeFile);
-      return next;
-    }
-    return base;
-  }, [formValues, stepIds, resumeFile]);
+  const completion = React.useMemo(
+    () => computeWizardStepCompletion(formValues, stepIds),
+    [formValues, stepIds],
+  );
   const activeWizardIndex = React.useMemo(
     () => getActiveWizardStepIndex(completion),
     [completion],
@@ -421,7 +414,7 @@ export function JobSpecsWizardPage() {
               file={resumeFile}
               onFileChange={setResumeFile}
               error={resumeFileError ?? undefined}
-              description={`Required. ${"PDF, Word (.doc, .docx), or RTF."} Max 10 MB.`}
+              description={`Optional. ${"PDF, Word (.doc, .docx), or RTF."} Max 10 MB.`}
               disabled={isSubmitting}
             />
             <TextInputField
