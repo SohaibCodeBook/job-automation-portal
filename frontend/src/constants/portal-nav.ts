@@ -67,9 +67,10 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   {
     id: "saved",
     label: "Saved",
+    href: `${ROUTES.scrappedJobs}?view=favorites`,
     icon: Bookmark,
     section: "tracking",
-    comingSoon: true,
+    badgeTone: "default",
   },
   {
     id: "interviews",

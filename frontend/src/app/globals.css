@@ -1288,14 +1288,19 @@ html.dark.portal-route [data-slot="dropdown-menu-checkbox-item"]:focus {
 }
 
 .portal-tab {
+  appearance: none;
   padding: 0.625rem 0.125rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--muted-foreground);
+  border: none;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   background: none;
   cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .portal-tab[data-active="true"] {
@@ -1504,6 +1509,44 @@ html.dark .portal-shell .portal-tab[data-active="true"] {
   padding: 0.375rem;
   color: var(--muted-foreground);
   opacity: 0.5;
+}
+
+.job-card-favorite-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  padding: 0.4375rem;
+  color: var(--muted-foreground);
+  background: color-mix(in oklab, var(--card) 80%, transparent);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.job-card-favorite-btn:hover:not(:disabled) {
+  border-color: color-mix(in oklab, #f43f5e 35%, var(--border));
+  color: #f43f5e;
+  background: color-mix(in oklab, #f43f5e 8%, transparent);
+}
+
+.job-card-favorite-btn--active {
+  border-color: color-mix(in oklab, #f43f5e 45%, transparent);
+  color: #f43f5e;
+  background: color-mix(in oklab, #f43f5e 14%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, #f43f5e 12%, transparent);
+}
+
+.job-card-favorite-btn--active:hover:not(:disabled) {
+  background: color-mix(in oklab, #f43f5e 20%, transparent);
+}
+
+.job-card-favorite-btn:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .job-detail-backdrop {
@@ -1725,6 +1768,25 @@ html.dark .portal-shell .job-card-tag {
 
 html.dark .portal-shell .job-card-salary {
   color: #10b981;
+}
+
+html.dark .portal-shell .job-card-favorite-btn {
+  border-color: var(--portal-border);
+  background: color-mix(in oklab, #ffffff 4%, transparent);
+  color: #9ca3af;
+}
+
+html.dark .portal-shell .job-card-favorite-btn:hover:not(:disabled) {
+  border-color: color-mix(in oklab, #fb7185 40%, var(--portal-border));
+  color: #fb7185;
+  background: color-mix(in oklab, #f43f5e 12%, transparent);
+}
+
+html.dark .portal-shell .job-card-favorite-btn--active {
+  border-color: color-mix(in oklab, #fb7185 50%, transparent);
+  color: #fb7185;
+  background: color-mix(in oklab, #f43f5e 16%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, #f43f5e 14%, transparent);
 }
 
 /* Rebuild resume — dark mode border beam (hover only) */

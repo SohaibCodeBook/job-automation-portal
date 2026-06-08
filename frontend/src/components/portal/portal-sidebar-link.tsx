@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import type { PortalNavItem } from "@/constants/portal-nav";
@@ -9,24 +9,37 @@ import type { PortalNavItem } from "@/constants/portal-nav";
 type PortalSidebarLinkProps = {
   item: PortalNavItem;
   onComingSoon?: () => void;
+  badgeOverride?: string;
 };
 
-export function PortalSidebarLink({ item, onComingSoon }: PortalSidebarLinkProps) {
+export function PortalSidebarLink({
+  item,
+  onComingSoon,
+  badgeOverride,
+}: PortalSidebarLinkProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const Icon = item.icon;
+  const view = searchParams.get("view");
+  const badge = badgeOverride ?? item.badge;
+
   const isActive =
     item.href != null &&
-    (pathname === item.href ||
-      (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
+    (item.id === "saved"
+      ? pathname === "/jobs" && view === "favorites"
+      : item.id === "scrapped-jobs"
+        ? pathname === item.href && view !== "favorites"
+        : pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
 
   const className = cn("portal-nav-link");
   const content = (
     <>
       <Icon className="size-4 shrink-0 opacity-90" strokeWidth={1.75} aria-hidden />
       <span className="truncate">{item.label}</span>
-      {item.badge ? (
+      {badge ? (
         <span className="portal-nav-badge" data-tone={item.badgeTone ?? "muted"}>
-          {item.badge}
+          {badge}
         </span>
       ) : null}
     </>

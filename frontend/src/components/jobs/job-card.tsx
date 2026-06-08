@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Bookmark, ChevronRight, Download, FilePenLine, Loader2 } from "lucide-react";
+import { ChevronRight, Download, FilePenLine, Loader2 } from "lucide-react";
 
+import { JobFavoriteButton } from "@/components/jobs/job-favorite-button";
 import { Button } from "@/components/ui/button";
 import {
   companyInitials,
@@ -183,15 +184,10 @@ export function JobCard({
               Download resume
             </Button>
           ) : null}
-          <button
-            type="button"
-            className="job-card-icon-btn"
-            aria-label="Save job (coming soon)"
-            onClick={(e) => e.stopPropagation()}
-            disabled
-          >
-            <Bookmark className="size-4" strokeWidth={1.75} />
-          </button>
+          <JobFavoriteButton
+            listingId={job.id}
+            initialFavorited={job.is_favorited}
+          />
           {job.url ? (
             <Button
               size="sm"

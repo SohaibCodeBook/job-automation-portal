@@ -11,9 +11,11 @@ import {
   PORTAL_NAV_SECTIONS,
   type PortalNavSectionId,
 } from "@/constants/portal-nav";
+import { useJobFavorites } from "@/hooks/use-job-favorites";
 
 export function PortalSidebar() {
   const [toast, setToast] = React.useState<string | null>(null);
+  const { favoritesCount } = useJobFavorites();
 
   React.useEffect(() => {
     if (!toast) return;
@@ -52,6 +54,11 @@ export function PortalSidebar() {
                 <li key={item.id}>
                   <PortalSidebarLink
                     item={item}
+                    badgeOverride={
+                      item.id === "saved" && favoritesCount > 0
+                        ? String(favoritesCount)
+                        : undefined
+                    }
                     onComingSoon={() =>
                       setToast(`${item.label} is coming soon.`)
                     }

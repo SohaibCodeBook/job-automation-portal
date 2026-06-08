@@ -2,14 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
   DollarSign,
+  Heart,
   Search,
   Send,
-  Star,
 } from "lucide-react";
 
 import { useSession } from "next-auth/react";
@@ -23,6 +24,7 @@ import { PortalHeader } from "@/components/portal/portal-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
+import { useJobFavorites } from "@/hooks/use-job-favorites";
 import { useJobListings } from "@/hooks/use-job-listings";
 import { rebuildJobListingResume } from "@/lib/api/job-listings";
 import {
@@ -34,8 +36,19 @@ import {
 import { cn } from "@/lib/utils";
 import type { JobListingDateFilter } from "@/types/job-listing";
 
+type JobsListView = "all" | "favorites";
+
 export function ScrappedJobsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const { favoritesCount, syncFromListItems } = useJobFavorites();
+  const prevFavoritesCount = React.useRef(favoritesCount);
+
+  const listView: JobsListView =
+    searchParams.get("view") === "favorites" ? "favorites" : "all";
+  const favoritesOnly = listView === "favorites";
+
   const [dateFilter, setDateFilter] = React.useState<JobListingDateFilter>("all");
   const [listedOn, setListedOn] = React.useState("");
 
@@ -52,6 +65,7 @@ export function ScrappedJobsPage() {
   } = useJobListings({
     dateFilter,
     listedOn: dateFilter === "on_date" ? listedOn : undefined,
+    favoritesOnly,
   });
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -109,6 +123,30 @@ export function ScrappedJobsPage() {
     }
   }, [items, selectedId]);
 
+  React.useEffect(() => {
+    syncFromListItems(items);
+  }, [items, syncFromListItems]);
+
+  React.useEffect(() => {
+    if (favoritesOnly && prevFavoritesCount.current !== favoritesCount) {
+      refetch();
+    }
+    prevFavoritesCount.current = favoritesCount;
+  }, [favoritesCount, favoritesOnly, refetch]);
+
+  function setListView(next: JobsListView) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "favorites") {
+      params.set("view", "favorites");
+    } else {
+      params.delete("view");
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${ROUTES.scrappedJobs}?${qs}` : ROUTES.scrappedJobs, {
+      scroll: false,
+    });
+  }
+
   function onDateFilterChange(value: string) {
     const next = value as JobListingDateFilter;
     setDateFilter(next);
@@ -163,7 +201,7 @@ export function ScrappedJobsPage() {
                 aria-hidden
               />
             </div>
-            <p className="text-2xl font-bold tracking-tight">{total}</p>
+            <p className="text-2xl font-bold tracking-tight">{dateCounts.all}</p>
             {newTodayCount > 0 ? (
               <p className="portal-stat-delta mt-1 text-xs">
                 +{newTodayCount} new today
@@ -175,12 +213,16 @@ export function ScrappedJobsPage() {
           <div className="portal-stat-card" data-accent="green">
             <div className="mb-3 flex items-start justify-between gap-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                On this page
+                Favorites
               </p>
-              <Star className="size-4 text-[var(--portal-accent)] opacity-90" strokeWidth={1.75} aria-hidden />
+              <Heart
+                className="size-4 text-[var(--portal-accent)] opacity-90"
+                strokeWidth={1.75}
+                aria-hidden
+              />
             </div>
-            <p className="text-2xl font-bold tracking-tight">{items.length}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Loaded results</p>
+            <p className="text-2xl font-bold tracking-tight">{favoritesCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Saved to apply later</p>
           </div>
           <div className="portal-stat-card" data-accent="orange">
             <div className="mb-3 flex items-start justify-between gap-2">
@@ -269,9 +311,22 @@ export function ScrappedJobsPage() {
         </div>
 
         <nav className="portal-tabs mb-4" aria-label="Job list">
-          <span className="portal-tab" data-active="true">
-            All Jobs ({total})
-          </span>
+          <button
+            type="button"
+            className="portal-tab"
+            data-active={listView === "all" ? "true" : undefined}
+            onClick={() => setListView("all")}
+          >
+            All Jobs ({dateCounts.all})
+          </button>
+          <button
+            type="button"
+            className="portal-tab"
+            data-active={listView === "favorites" ? "true" : undefined}
+            onClick={() => setListView("favorites")}
+          >
+            Favorites ({favoritesCount})
+          </button>
         </nav>
 
         {isLoading ? <JobListSkeleton /> : null}
@@ -288,6 +343,7 @@ export function ScrappedJobsPage() {
         {!isLoading && !error && !awaitingSpecificDate && filteredItems.length === 0 ? (
           <JobListEmpty
             filtered={hasClientFilters || hasDateFilter}
+            favoritesView={favoritesOnly}
           />
         ) : null}
 
