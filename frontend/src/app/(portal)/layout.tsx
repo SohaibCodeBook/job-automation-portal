@@ -1,5 +1,6 @@
 import { PortalShell } from "@/components/portal/portal-shell";
 import { PortalTheme } from "@/components/portal/portal-theme";
+import { JobFavoritesProvider } from "@/hooks/use-job-favorites";
 
 export default function PortalLayout({
   children,
@@ -8,7 +9,9 @@ export default function PortalLayout({
 }) {
   return (
     <PortalTheme>
-      <PortalShell>{children}</PortalShell>
+      <JobFavoritesProvider>
+        <PortalShell>{children}</PortalShell>
+      </JobFavoritesProvider>
     </PortalTheme>
   );
 }

@@ -28,6 +28,7 @@ type UseJobListingsOptions = {
   pageSize?: number;
   dateFilter?: JobListingDateFilter;
   listedOn?: string;
+  favoritesOnly?: boolean;
 };
 
 type UseJobListingsResult = {
@@ -49,6 +50,7 @@ export function useJobListings(
   const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
   const dateFilter = options.dateFilter ?? "all";
   const listedOn = options.listedOn;
+  const favoritesOnly = options.favoritesOnly ?? false;
 
   const { data: session, status: sessionStatus } = useSession();
   const [page, setPage] = React.useState(1);
@@ -67,7 +69,7 @@ export function useJobListings(
 
   React.useEffect(() => {
     setPage(1);
-  }, [dateFilter, listedOn]);
+  }, [dateFilter, listedOn, favoritesOnly]);
 
   React.useEffect(() => {
     const token = session?.accessToken;
@@ -125,6 +127,7 @@ export function useJobListings(
       pageSize,
       dateFilter,
       listedOn,
+      favoritesOnly,
     })
       .then((res) => {
         if (cancelled) return;
@@ -151,6 +154,7 @@ export function useJobListings(
     pageSize,
     dateFilter,
     listedOn,
+    favoritesOnly,
     fetchKey,
   ]);
 

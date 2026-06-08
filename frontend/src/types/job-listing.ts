@@ -12,6 +12,7 @@ export type JobListingListItem = {
   field: string | null;
   job_origin: string | null;
   created_at: string | null;
+  is_favorited?: boolean;
 };
 
 export type JobListingDetail = JobListingListItem & {
@@ -48,4 +49,14 @@ export type JobListingDateCounts = {
   last_2_weeks: number;
   last_30_days: number;
   older: number;
+};
+
+export type JobListingFavoritesSummary = {
+  count: number;
+  ids: string[];
+};
+
+export type JobListingFavoriteToggleResult = {
+  favorited: boolean;
+  count: number;
 };
