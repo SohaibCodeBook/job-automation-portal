@@ -23,6 +23,17 @@ class JobListingListItem(BaseModel):
     field: str | None = None
     job_origin: str | None = None
     created_at: datetime | None = None
+    is_favorited: bool = False
+
+
+class JobListingFavoritesSummaryResponse(BaseModel):
+    count: int
+    ids: list[str]
+
+
+class JobListingFavoriteToggleResponse(BaseModel):
+    favorited: bool
+    count: int
 
 
 class JobListingListResponse(BaseModel):
@@ -61,3 +72,4 @@ class JobListingDetailResponse(BaseModel):
     omit_words: str | None = None
     job_origin: str | None = None
     created_at: datetime | None = None
+    is_favorited: bool = False

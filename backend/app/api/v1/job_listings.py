@@ -13,6 +13,8 @@ from app.schemas.job_listing_responses import (
     JobListingDateCountsResponse,
     JobListingDetailResponse,
     JobListingErrorResponse,
+    JobListingFavoriteToggleResponse,
+    JobListingFavoritesSummaryResponse,
     JobListingListResponse,
 )
 from app.services.job_listing_service import (
@@ -49,6 +51,19 @@ async def job_listing_date_counts(
 
 
 @router.get(
+    "/favorites",
+    response_model=JobListingFavoritesSummaryResponse,
+    responses={401: {"model": JobListingErrorResponse}},
+)
+async def job_listing_favorites_summary(
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingFavoritesSummaryResponse:
+    summary = await service.favorites_summary_for_user(user_id)
+    return JobListingFavoritesSummaryResponse(**summary)
+
+
+@router.get(
     "",
     response_model=JobListingListResponse,
     responses={
@@ -73,6 +88,10 @@ async def list_job_listings(
         None,
         description="Calendar day (YYYY-MM-DD) when date_filter=on_date.",
     ),
+    favorites_only: bool = Query(
+        False,
+        description="When true, return only listings favorited by the current user.",
+    ),
 ) -> JobListingListResponse | JSONResponse:
     try:
         result = await service.list_for_user(
@@ -82,6 +101,7 @@ async def list_job_listings(
             job_application_id=job_application_id,
             date_filter=date_filter.value,
             listed_on=listed_on,
+            favorites_only=favorites_only,
         )
         return JobListingListResponse(**result)
     except ValueError as exc:
@@ -89,6 +109,56 @@ async def list_job_listings(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         ) from exc
+
+
+@router.post(
+    "/{listing_id}/favorite",
+    response_model=JobListingFavoriteToggleResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def add_job_listing_favorite(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingFavoriteToggleResponse | JSONResponse:
+    try:
+        result = await service.add_favorite(user_id, listing_id)
+        return JobListingFavoriteToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.delete(
+    "/{listing_id}/favorite",
+    response_model=JobListingFavoriteToggleResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def remove_job_listing_favorite(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingFavoriteToggleResponse | JSONResponse:
+    try:
+        result = await service.remove_favorite(user_id, listing_id)
+        return JobListingFavoriteToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
 
 
 @router.post(

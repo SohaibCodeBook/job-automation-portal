@@ -12,6 +12,7 @@ from app.lib.listing_date_filter import (
 )
 from app.models.job_application import JobApplication
 from app.models.job_listing import JobListing
+from app.models.job_listing_favorite import JobListingFavorite
 
 
 class JobListingRepository:
@@ -39,10 +40,16 @@ class JobListingRepository:
         job_application_id: uuid.UUID | None = None,
         date_filter: ListingDateFilter | None = None,
         listed_on: date | None = None,
+        favorites_only: bool = False,
     ) -> list:
         return [
             *self._base_clauses(user_id, job_application_id),
             *created_at_filter_clauses(date_filter, listed_on),
+            *(
+                [JobListingFavorite.user_id == user_id]
+                if favorites_only
+                else []
+            ),
         ]
 
     async def list_for_user(
@@ -54,6 +61,7 @@ class JobListingRepository:
         job_application_id: uuid.UUID | None = None,
         date_filter: ListingDateFilter | None = None,
         listed_on: date | None = None,
+        favorites_only: bool = False,
     ) -> tuple[list[JobListing], int]:
         offset = (page - 1) * page_size
         join = self._join_on_application()
@@ -62,19 +70,30 @@ class JobListingRepository:
             job_application_id=job_application_id,
             date_filter=date_filter,
             listed_on=listed_on,
+            favorites_only=favorites_only,
         )
 
         count_stmt = (
             select(func.count())
             .select_from(JobListing)
             .join(JobApplication, join)
-            .where(*clauses)
         )
+        listings_stmt = select(JobListing).join(JobApplication, join)
+        if favorites_only:
+            count_stmt = count_stmt.join(
+                JobListingFavorite,
+                JobListingFavorite.job_listing_id == JobListing.id,
+            )
+            listings_stmt = listings_stmt.join(
+                JobListingFavorite,
+                JobListingFavorite.job_listing_id == JobListing.id,
+            )
+
+        count_stmt = count_stmt.where(*clauses)
         total = int((await self._session.execute(count_stmt)).scalar_one())
 
         stmt = (
-            select(JobListing)
-            .join(JobApplication, join)
+            listings_stmt
             .where(*clauses)
             .order_by(
                 JobListing.created_at.desc().nullslast(),
