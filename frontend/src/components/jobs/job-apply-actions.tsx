@@ -85,32 +85,33 @@ export function JobApplyActions({
 
   return (
     <div className={cn("job-card-apply-actions", className)}>
-      <div className="job-card-apply-primary">
-        {url ? (
-          <Button
-            size="sm"
-            className="portal-btn-primary gap-1"
-            asChild
-            onClick={handleApplyClick}
-          >
-            <a href={url} target="_blank" rel="noopener noreferrer">
+      {!pendingMark ? (
+        <div className="job-card-apply-primary">
+          {url ? (
+            <Button
+              size="sm"
+              className="portal-btn-primary gap-1"
+              asChild
+              onClick={handleApplyClick}
+            >
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                Apply
+                <ChevronRight className="size-3.5" aria-hidden />
+              </a>
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="portal-btn-primary gap-1"
+              disabled
+              onClick={(event) => event.stopPropagation()}
+            >
               Apply
               <ChevronRight className="size-3.5" aria-hidden />
-            </a>
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            className="portal-btn-primary gap-1"
-            disabled
-            onClick={(event) => event.stopPropagation()}
-          >
-            Apply
-            <ChevronRight className="size-3.5" aria-hidden />
-          </Button>
-        )}
-      </div>
-      {pendingMark ? (
+            </Button>
+          )}
+        </div>
+      ) : (
         <Button
           type="button"
           size="sm"
@@ -128,7 +129,7 @@ export function JobApplyActions({
             "Mark as Applied"
           )}
         </Button>
-      ) : null}
+      )}
       {actionError ? <p className="job-card-apply-error">{actionError}</p> : null}
     </div>
   );
