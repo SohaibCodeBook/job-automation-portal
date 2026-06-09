@@ -39,7 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { JobListingDateFilter } from "@/types/job-listing";
 
-type JobsListView = "all" | "favorites";
+type JobsListView = "all" | "favorites" | "applied";
 
 export function ScrappedJobsPage() {
   const router = useRouter();
@@ -47,12 +47,22 @@ export function ScrappedJobsPage() {
   const { data: session } = useSession();
   const { favoritesCount, syncFromListItems: syncFavoritesFromListItems } =
     useJobFavorites();
-  const { syncFromListItems: syncAppliedFromListItems } = useJobApplied();
+  const {
+    appliedCount,
+    syncFromListItems: syncAppliedFromListItems,
+  } = useJobApplied();
   const prevFavoritesCount = React.useRef(favoritesCount);
+  const prevAppliedCount = React.useRef(appliedCount);
 
+  const viewParam = searchParams.get("view");
   const listView: JobsListView =
-    searchParams.get("view") === "favorites" ? "favorites" : "all";
+    viewParam === "favorites"
+      ? "favorites"
+      : viewParam === "applied"
+        ? "applied"
+        : "all";
   const favoritesOnly = listView === "favorites";
+  const appliedOnly = listView === "applied";
 
   const [dateFilter, setDateFilter] = React.useState<JobListingDateFilter>("all");
   const [listedOn, setListedOn] = React.useState("");
@@ -71,6 +81,7 @@ export function ScrappedJobsPage() {
     dateFilter,
     listedOn: dateFilter === "on_date" ? listedOn : undefined,
     favoritesOnly,
+    appliedOnly,
   });
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -140,10 +151,19 @@ export function ScrappedJobsPage() {
     prevFavoritesCount.current = favoritesCount;
   }, [favoritesCount, favoritesOnly, refetch]);
 
+  React.useEffect(() => {
+    if (appliedOnly && prevAppliedCount.current !== appliedCount) {
+      refetch();
+    }
+    prevAppliedCount.current = appliedCount;
+  }, [appliedCount, appliedOnly, refetch]);
+
   function setListView(next: JobsListView) {
     const params = new URLSearchParams(searchParams.toString());
     if (next === "favorites") {
       params.set("view", "favorites");
+    } else if (next === "applied") {
+      params.set("view", "applied");
     } else {
       params.delete("view");
     }
@@ -182,6 +202,7 @@ export function ScrappedJobsPage() {
       dateFilter,
       listedOn,
       favoritesOnly,
+      appliedOnly,
       searchQuery,
       typeFilter,
       locationFilter,
@@ -191,6 +212,7 @@ export function ScrappedJobsPage() {
     dateFilter,
     listedOn,
     favoritesOnly,
+    appliedOnly,
     searchQuery,
     typeFilter,
     locationFilter,
@@ -271,8 +293,8 @@ export function ScrappedJobsPage() {
               </p>
               <Send className="size-4 text-[var(--portal-accent)] opacity-90" strokeWidth={1.75} aria-hidden />
             </div>
-            <p className="text-2xl font-bold tracking-tight">—</p>
-            <p className="mt-1 text-xs text-muted-foreground">Coming soon</p>
+            <p className="text-2xl font-bold tracking-tight">{appliedCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Marked as applied</p>
           </div>
           <div className="portal-stat-card" data-accent="purple">
             <div className="mb-3 flex items-start justify-between gap-2">
@@ -367,6 +389,14 @@ export function ScrappedJobsPage() {
           >
             Favorites ({favoritesCount})
           </button>
+          <button
+            type="button"
+            className="portal-tab"
+            data-active={listView === "applied" ? "true" : undefined}
+            onClick={() => setListView("applied")}
+          >
+            Applied ({appliedCount})
+          </button>
         </nav>
 
         {isLoading ? <JobListSkeleton /> : null}
@@ -384,6 +414,7 @@ export function ScrappedJobsPage() {
           <JobListEmpty
             filtered={hasClientFilters || hasDateFilter}
             favoritesView={favoritesOnly}
+            appliedView={appliedOnly}
           />
         ) : null}
 

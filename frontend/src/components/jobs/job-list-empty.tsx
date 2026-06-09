@@ -7,23 +7,29 @@ import { ROUTES } from "@/constants/routes";
 type JobListEmptyProps = {
   filtered?: boolean;
   favoritesView?: boolean;
+  appliedView?: boolean;
 };
 
 export function JobListEmpty({
   filtered = false,
   favoritesView = false,
+  appliedView = false,
 }: JobListEmptyProps) {
-  const title = favoritesView
-    ? "No favorites yet"
-    : filtered
-      ? "No jobs match your search"
-      : "No scrapped jobs yet";
+  const title = appliedView
+    ? "No applied jobs yet"
+    : favoritesView
+      ? "No favorites yet"
+      : filtered
+        ? "No jobs match your search"
+        : "No scrapped jobs yet";
 
-  const description = favoritesView
-    ? "Tap the heart on any job card to save it here and apply when you're ready."
-    : filtered
-      ? "Try a different keyword or clear the search box."
-      : "Complete Job Specs and run a scrape. Matching roles will appear here.";
+  const description = appliedView
+    ? "Apply to a job from All Jobs, then mark it as applied to track it here."
+    : favoritesView
+      ? "Tap the heart on any job card to save it here and apply when you're ready."
+      : filtered
+        ? "Try a different keyword or clear the search box."
+        : "Complete Job Specs and run a scrape. Matching roles will appear here.";
 
   return (
     <div className="portal-empty-panel">
@@ -38,7 +44,7 @@ export function JobListEmpty({
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {description}
       </p>
-      {!filtered && !favoritesView ? (
+      {!filtered && !favoritesView && !appliedView ? (
         <Button className="portal-btn-primary mt-6" asChild>
           <Link href={ROUTES.jobSpecs}>Set up Job Specs</Link>
         </Button>
