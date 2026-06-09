@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Download, Loader2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type JobExportCsvButtonProps = {
@@ -33,29 +34,21 @@ export function JobExportCsvButton({
   }
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="sm"
       className={cn("portal-export-csv-btn", className)}
       onClick={handleClick}
       disabled={disabled || exporting}
       aria-busy={exporting}
-      aria-label="Export CSV"
     >
       {exporting ? (
-        <Loader2
-          className="portal-export-csv-icon size-[1.125rem] shrink-0 animate-spin"
-          aria-hidden
-        />
+        <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden />
       ) : (
-        <Download
-          className="portal-export-csv-icon size-[1.125rem] shrink-0"
-          aria-hidden
-        />
+        <Download className="size-3.5 shrink-0" aria-hidden />
       )}
-      <span className="portal-export-csv-label">
-        <span>Export</span>
-        <span>CSV</span>
-      </span>
-    </button>
+      Export CSV
+    </Button>
   );
 }
