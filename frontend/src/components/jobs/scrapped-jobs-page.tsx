@@ -25,6 +25,7 @@ import { PortalHeader } from "@/components/portal/portal-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
+import { useJobApplied } from "@/hooks/use-job-applied";
 import { useJobFavorites } from "@/hooks/use-job-favorites";
 import { useJobListings } from "@/hooks/use-job-listings";
 import { rebuildJobListingResume } from "@/lib/api/job-listings";
@@ -44,7 +45,9 @@ export function ScrappedJobsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const { favoritesCount, syncFromListItems } = useJobFavorites();
+  const { favoritesCount, syncFromListItems: syncFavoritesFromListItems } =
+    useJobFavorites();
+  const { syncFromListItems: syncAppliedFromListItems } = useJobApplied();
   const prevFavoritesCount = React.useRef(favoritesCount);
 
   const listView: JobsListView =
@@ -126,8 +129,9 @@ export function ScrappedJobsPage() {
   }, [items, selectedId]);
 
   React.useEffect(() => {
-    syncFromListItems(items);
-  }, [items, syncFromListItems]);
+    syncFavoritesFromListItems(items);
+    syncAppliedFromListItems(items);
+  }, [items, syncFavoritesFromListItems, syncAppliedFromListItems]);
 
   React.useEffect(() => {
     if (favoritesOnly && prevFavoritesCount.current !== favoritesCount) {

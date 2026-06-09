@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, Download, FilePenLine, Loader2 } from "lucide-react";
+import { Download, FilePenLine, Loader2 } from "lucide-react";
 
+import { JobApplyActions } from "@/components/jobs/job-apply-actions";
 import { JobFavoriteButton } from "@/components/jobs/job-favorite-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -188,29 +189,11 @@ export function JobCard({
             listingId={job.id}
             initialFavorited={job.is_favorited}
           />
-          {job.url ? (
-            <Button
-              size="sm"
-              className="portal-btn-primary gap-1"
-              asChild
-              onClick={(e) => e.stopPropagation()}
-            >
-              <a href={job.url} target="_blank" rel="noopener noreferrer">
-                Apply
-                <ChevronRight className="size-3.5" aria-hidden />
-              </a>
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              className="portal-btn-primary gap-1"
-              disabled
-              onClick={(e) => e.stopPropagation()}
-            >
-              Apply
-              <ChevronRight className="size-3.5" aria-hidden />
-            </Button>
-          )}
+          <JobApplyActions
+            listingId={job.id}
+            url={job.url}
+            initialApplied={job.is_applied}
+          />
         </div>
         {rebuildError ? (
           <p
