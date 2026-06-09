@@ -10,6 +10,8 @@ from app.api.deps import get_job_listing_service, get_resume_rebuild_service
 from app.core.security import get_current_user_id
 from app.lib.listing_date_filter import ListingDateFilter
 from app.schemas.job_listing_responses import (
+    JobListingAppliedSummaryResponse,
+    JobListingAppliedToggleResponse,
     JobListingDateCountsResponse,
     JobListingDetailResponse,
     JobListingErrorResponse,
@@ -64,6 +66,19 @@ async def job_listing_favorites_summary(
 
 
 @router.get(
+    "/applied",
+    response_model=JobListingAppliedSummaryResponse,
+    responses={401: {"model": JobListingErrorResponse}},
+)
+async def job_listing_applied_summary(
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingAppliedSummaryResponse:
+    summary = await service.applied_summary_for_user(user_id)
+    return JobListingAppliedSummaryResponse(**summary)
+
+
+@router.get(
     "",
     response_model=JobListingListResponse,
     responses={
@@ -92,6 +107,10 @@ async def list_job_listings(
         False,
         description="When true, return only listings favorited by the current user.",
     ),
+    applied_only: bool = Query(
+        False,
+        description="When true, return only listings marked applied by the current user.",
+    ),
 ) -> JobListingListResponse | JSONResponse:
     try:
         result = await service.list_for_user(
@@ -102,6 +121,7 @@ async def list_job_listings(
             date_filter=date_filter.value,
             listed_on=listed_on,
             favorites_only=favorites_only,
+            applied_only=applied_only,
         )
         return JobListingListResponse(**result)
     except ValueError as exc:
@@ -152,6 +172,56 @@ async def remove_job_listing_favorite(
     try:
         result = await service.remove_favorite(user_id, listing_id)
         return JobListingFavoriteToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.post(
+    "/{listing_id}/applied",
+    response_model=JobListingAppliedToggleResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def mark_job_listing_applied(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingAppliedToggleResponse | JSONResponse:
+    try:
+        result = await service.mark_applied(user_id, listing_id)
+        return JobListingAppliedToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.delete(
+    "/{listing_id}/applied",
+    response_model=JobListingAppliedToggleResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def unmark_job_listing_applied(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingAppliedToggleResponse | JSONResponse:
+    try:
+        result = await service.unmark_applied(user_id, listing_id)
+        return JobListingAppliedToggleResponse(**result)
     except JobListingNotFoundError:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,

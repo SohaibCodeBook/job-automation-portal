@@ -24,6 +24,7 @@ class JobListingListItem(BaseModel):
     job_origin: str | None = None
     created_at: datetime | None = None
     is_favorited: bool = False
+    is_applied: bool = False
 
 
 class JobListingFavoritesSummaryResponse(BaseModel):
@@ -31,8 +32,18 @@ class JobListingFavoritesSummaryResponse(BaseModel):
     ids: list[str]
 
 
+class JobListingAppliedSummaryResponse(BaseModel):
+    count: int
+    ids: list[str]
+
+
 class JobListingFavoriteToggleResponse(BaseModel):
     favorited: bool
+    count: int
+
+
+class JobListingAppliedToggleResponse(BaseModel):
+    applied: bool
     count: int
 
 
@@ -73,3 +84,4 @@ class JobListingDetailResponse(BaseModel):
     job_origin: str | None = None
     created_at: datetime | None = None
     is_favorited: bool = False
+    is_applied: bool = False

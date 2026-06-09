@@ -8,13 +8,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.listing_date_filter import ListingDateFilter
 from app.models.job_listing import JobListing
+from app.repositories.job_listing_applied_repository import (
+    JobListingAppliedRepository,
+)
 from app.repositories.job_listing_favorite_repository import (
     JobListingFavoriteRepository,
 )
 from app.repositories.job_listing_repository import JobListingRepository
 
 
-def _to_list_item(listing: JobListing, *, is_favorited: bool = False) -> dict[str, Any]:
+def _to_list_item(
+    listing: JobListing,
+    *,
+    is_favorited: bool = False,
+    is_applied: bool = False,
+) -> dict[str, Any]:
     return {
         "id": str(listing.id),
         "job_application_id": str(listing.job_application_id),
@@ -30,10 +38,16 @@ def _to_list_item(listing: JobListing, *, is_favorited: bool = False) -> dict[st
         "job_origin": listing.job_origin,
         "created_at": listing.created_at,
         "is_favorited": is_favorited,
+        "is_applied": is_applied,
     }
 
 
-def _to_detail(listing: JobListing, *, is_favorited: bool = False) -> dict[str, Any]:
+def _to_detail(
+    listing: JobListing,
+    *,
+    is_favorited: bool = False,
+    is_applied: bool = False,
+) -> dict[str, Any]:
     return {
         "id": str(listing.id),
         "job_application_id": str(listing.job_application_id),
@@ -55,6 +69,7 @@ def _to_detail(listing: JobListing, *, is_favorited: bool = False) -> dict[str, 
         "job_origin": listing.job_origin,
         "created_at": listing.created_at,
         "is_favorited": is_favorited,
+        "is_applied": is_applied,
     }
 
 
@@ -76,6 +91,7 @@ class JobListingService:
         self._session = session
         self._repo = JobListingRepository(session)
         self._favorites = JobListingFavoriteRepository(session)
+        self._applied = JobListingAppliedRepository(session)
 
     async def list_for_user(
         self,
@@ -87,6 +103,7 @@ class JobListingService:
         date_filter: str | None = None,
         listed_on: date | None = None,
         favorites_only: bool = False,
+        applied_only: bool = False,
     ) -> dict[str, Any]:
         bucket = _parse_date_filter(date_filter)
         if bucket == ListingDateFilter.ON_DATE and listed_on is None:
@@ -100,15 +117,24 @@ class JobListingService:
             date_filter=bucket,
             listed_on=listed_on,
             favorites_only=favorites_only,
+            applied_only=applied_only,
         )
         listing_ids = [row.id for row in listings]
         favorite_ids = await self._favorites.favorite_ids_for_listings(
             user_id,
             listing_ids,
         )
+        applied_ids = await self._applied.applied_ids_for_listings(
+            user_id,
+            listing_ids,
+        )
         return {
             "items": [
-                _to_list_item(row, is_favorited=row.id in favorite_ids)
+                _to_list_item(
+                    row,
+                    is_favorited=row.id in favorite_ids,
+                    is_applied=row.id in applied_ids,
+                )
                 for row in listings
             ],
             "total": total,
@@ -144,12 +170,29 @@ class JobListingService:
             user_id,
             [listing.id],
         )
-        return _to_detail(listing, is_favorited=listing.id in favorite_ids)
+        applied_ids = await self._applied.applied_ids_for_listings(
+            user_id,
+            [listing.id],
+        )
+        return _to_detail(
+            listing,
+            is_favorited=listing.id in favorite_ids,
+            is_applied=listing.id in applied_ids,
+        )
 
     async def favorites_summary_for_user(
         self, user_id: uuid.UUID
     ) -> dict[str, Any]:
         ids = await self._favorites.list_ids_for_user(user_id)
+        return {
+            "count": len(ids),
+            "ids": [str(listing_id) for listing_id in ids],
+        }
+
+    async def applied_summary_for_user(
+        self, user_id: uuid.UUID
+    ) -> dict[str, Any]:
+        ids = await self._applied.list_ids_for_user(user_id)
         return {
             "count": len(ids),
             "ids": [str(listing_id) for listing_id in ids],
@@ -176,3 +219,25 @@ class JobListingService:
         await self._session.commit()
         count = await self._favorites.count_for_user(user_id)
         return {"favorited": False, "count": count}
+
+    async def mark_applied(
+        self, user_id: uuid.UUID, listing_id: uuid.UUID
+    ) -> dict[str, Any]:
+        listing = await self._repo.get_for_user(user_id, listing_id)
+        if listing is None:
+            raise JobListingNotFoundError()
+        await self._applied.add(user_id, listing_id)
+        await self._session.commit()
+        count = await self._applied.count_for_user(user_id)
+        return {"applied": True, "count": count}
+
+    async def unmark_applied(
+        self, user_id: uuid.UUID, listing_id: uuid.UUID
+    ) -> dict[str, Any]:
+        listing = await self._repo.get_for_user(user_id, listing_id)
+        if listing is None:
+            raise JobListingNotFoundError()
+        await self._applied.remove(user_id, listing_id)
+        await self._session.commit()
+        count = await self._applied.count_for_user(user_id)
+        return {"applied": False, "count": count}
