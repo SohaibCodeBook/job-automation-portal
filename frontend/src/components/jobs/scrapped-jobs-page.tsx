@@ -17,6 +17,7 @@ import { useSession } from "next-auth/react";
 
 import { JobCard } from "@/components/jobs/job-card";
 import { JobDetailPanel } from "@/components/jobs/job-detail-panel";
+import { JobExportCsvButton } from "@/components/jobs/job-export-csv-button";
 import { JobListEmpty } from "@/components/jobs/job-list-empty";
 import { JobListError } from "@/components/jobs/job-list-error";
 import { JobListSkeleton } from "@/components/jobs/job-list-skeleton";
@@ -27,6 +28,7 @@ import { ROUTES } from "@/constants/routes";
 import { useJobFavorites } from "@/hooks/use-job-favorites";
 import { useJobListings } from "@/hooks/use-job-listings";
 import { rebuildJobListingResume } from "@/lib/api/job-listings";
+import { exportJobListingsCsv } from "@/lib/export-job-listings-csv";
 import {
   DATE_FILTER_OPTIONS,
   filterJobListings,
@@ -166,6 +168,36 @@ export function ScrappedJobsPage() {
     [session?.accessToken],
   );
 
+  const handleExportCsv = React.useCallback(async () => {
+    const token = session?.accessToken;
+    if (!token) {
+      throw new Error("Sign in to export jobs.");
+    }
+    await exportJobListingsCsv({
+      accessToken: token,
+      dateFilter,
+      listedOn,
+      favoritesOnly,
+      searchQuery,
+      typeFilter,
+      locationFilter,
+    });
+  }, [
+    session?.accessToken,
+    dateFilter,
+    listedOn,
+    favoritesOnly,
+    searchQuery,
+    typeFilter,
+    locationFilter,
+  ]);
+
+  const exportDisabled =
+    !session?.accessToken ||
+    isLoading ||
+    awaitingSpecificDate ||
+    total === 0;
+
   return (
     <div className={cn("scrapped-jobs-layout", hasDetail && "scrapped-jobs-layout--split")}>
       <div className="scrapped-jobs-main">
@@ -174,6 +206,10 @@ export function ScrappedJobsPage() {
           subtitle={formatSyncedLabel(latestCreated)}
           actions={
             <>
+              <JobExportCsvButton
+                onExport={handleExportCsv}
+                disabled={exportDisabled}
+              />
               <Button
                 variant="outline"
                 size="sm"
