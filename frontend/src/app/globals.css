@@ -976,7 +976,7 @@ html.portal-route body {
   opacity: 0.5;
 }
 
-.portal-export-csv-btn {
+html:not(.dark) .portal-export-csv-btn {
   border-color: #22c55e;
   background: transparent;
   color: #22c55e;
@@ -988,27 +988,15 @@ html.portal-route body {
     color 0.2s ease;
 }
 
-.portal-export-csv-btn:hover:not(:disabled) {
+html:not(.dark) .portal-export-csv-btn:hover:not(:disabled) {
   border-color: #4ade80;
   background: color-mix(in oklab, #22c55e 10%, transparent);
   color: #4ade80;
   box-shadow: 0 0 12px color-mix(in oklab, #22c55e 38%, transparent);
 }
 
-.portal-export-csv-btn:disabled {
+html:not(.dark) .portal-export-csv-btn:disabled {
   box-shadow: none;
-}
-
-html.dark .portal-shell .portal-export-csv-btn {
-  border-color: #22c55e;
-  background: transparent;
-  color: #22c55e;
-}
-
-html.dark .portal-shell .portal-export-csv-btn:hover:not(:disabled) {
-  border-color: #4ade80;
-  background: color-mix(in oklab, #22c55e 12%, transparent);
-  color: #4ade80;
 }
 
 /* ─── Portal dark theme (JobPilot); forms inherit via scoped shadcn tokens ─── */
@@ -1223,6 +1211,33 @@ html.dark .portal-shell .portal-main [data-slot="button"][data-variant="outline"
 
 html.dark .portal-shell .portal-main [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
   background-color: #1a1d24;
+}
+
+html.dark .portal-shell .portal-main [data-slot="button"].portal-export-csv-btn[data-variant="outline"] {
+  border-color: #22c55e;
+  background-color: transparent;
+  color: #22c55e;
+  box-shadow:
+    0 0 6px color-mix(in oklab, #22c55e 50%, transparent),
+    0 0 14px color-mix(in oklab, #22c55e 24%, transparent);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+html.dark .portal-shell .portal-main [data-slot="button"].portal-export-csv-btn[data-variant="outline"]:hover:not(:disabled) {
+  border-color: #4ade80;
+  background-color: color-mix(in oklab, #22c55e 10%, transparent);
+  color: #4ade80;
+  box-shadow:
+    0 0 8px color-mix(in oklab, #4ade80 55%, transparent),
+    0 0 18px color-mix(in oklab, #4ade80 30%, transparent);
+}
+
+html.dark .portal-shell .portal-main [data-slot="button"].portal-export-csv-btn[data-variant="outline"]:disabled {
+  box-shadow: none;
 }
 
 html.dark .portal-shell .portal-main .text-emerald-600,
