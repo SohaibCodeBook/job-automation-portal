@@ -1625,32 +1625,47 @@ html.dark .portal-shell .portal-tab[data-active="true"] {
 
 .job-card-apply-status {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.job-card-applied-pill {
+  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklab, var(--portal-success, #10b981) 32%, transparent);
+  background: color-mix(in oklab, var(--portal-success, #10b981) 12%, transparent);
+  overflow: hidden;
 }
 
 .job-card-applied-badge {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
-  padding: 0.3125rem 0.625rem;
+  flex-shrink: 0;
+  padding: 0.3125rem 0.375rem 0.3125rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1;
-  background: color-mix(in oklab, var(--portal-success, #10b981) 18%, transparent);
+  white-space: nowrap;
   color: var(--portal-success, #0f766e);
-  border: 1px solid color-mix(in oklab, var(--portal-success, #10b981) 32%, transparent);
+  background: transparent;
+  border: none;
 }
 
 .job-card-applied-undo {
+  flex-shrink: 0;
+  padding: 0.3125rem 0.625rem 0.3125rem 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1;
+  white-space: nowrap;
   color: var(--muted-foreground);
   text-decoration: underline;
   text-underline-offset: 2px;
+  background: transparent;
+  border: none;
   transition: color 0.15s ease;
 }
 
@@ -1925,10 +1940,13 @@ html.dark .portal-shell .job-card-mark-applied-btn:hover:not(:disabled) {
   color: #34d399;
 }
 
-html.dark .portal-shell .job-card-applied-badge {
-  background: color-mix(in oklab, var(--portal-success) 16%, transparent);
-  color: #34d399;
+html.dark .portal-shell .job-card-applied-pill {
   border-color: color-mix(in oklab, var(--portal-success) 38%, transparent);
+  background: color-mix(in oklab, var(--portal-success) 14%, transparent);
+}
+
+html.dark .portal-shell .job-card-applied-badge {
+  color: #34d399;
 }
 
 html.dark .portal-shell .job-card-applied-undo {

@@ -67,15 +67,17 @@ export function JobApplyActions({
   if (applied) {
     return (
       <div className={cn("job-card-apply-status", className)}>
-        <span className="job-card-applied-badge">Applied</span>
-        <button
-          type="button"
-          className="job-card-applied-undo"
-          disabled={updating}
-          onClick={handleUndo}
-        >
-          {updating ? "Undoing…" : "Undo"}
-        </button>
+        <div className="job-card-applied-pill">
+          <span className="job-card-applied-badge">Applied</span>
+          <button
+            type="button"
+            className="job-card-applied-undo"
+            disabled={updating}
+            onClick={handleUndo}
+          >
+            {updating ? "Undoing…" : "Undo"}
+          </button>
+        </div>
         {actionError ? (
           <p className="job-card-apply-error">{actionError}</p>
         ) : null}
