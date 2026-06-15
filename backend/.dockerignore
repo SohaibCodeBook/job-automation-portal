@@ -1,0 +1,11 @@
+__pycache__
+*.py[cod]
+*.pyo
+.env
+.env.*
+.venv
+venv
+uploads
+.git
+.gitignore
+*.md
