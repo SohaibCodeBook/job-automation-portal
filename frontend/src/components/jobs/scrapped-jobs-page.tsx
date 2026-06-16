@@ -15,6 +15,7 @@ import {
 
 import { useSession } from "next-auth/react";
 
+import { ActiveSearchSpecPanel } from "@/components/jobs/active-search-spec-panel";
 import { JobCard } from "@/components/jobs/job-card";
 import { JobDetailPanel } from "@/components/jobs/job-detail-panel";
 import { JobExportCsvButton } from "@/components/jobs/job-export-csv-button";
@@ -28,6 +29,7 @@ import { ROUTES } from "@/constants/routes";
 import { useJobApplied } from "@/hooks/use-job-applied";
 import { useJobFavorites } from "@/hooks/use-job-favorites";
 import { useJobListings } from "@/hooks/use-job-listings";
+import { useLatestJobSpec } from "@/hooks/use-latest-job-spec";
 import { rebuildJobListingResume } from "@/lib/api/job-listings";
 import { exportJobListingsCsv } from "@/lib/export-job-listings-csv";
 import {
@@ -83,6 +85,7 @@ export function ScrappedJobsPage() {
     favoritesOnly,
     appliedOnly,
   });
+  const { spec: latestJobSpec, isLoading: latestSpecLoading } = useLatestJobSpec();
 
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -311,6 +314,8 @@ export function ScrappedJobsPage() {
             <p className="mt-1 text-xs text-muted-foreground">Varies by listing</p>
           </div>
         </div>
+
+        <ActiveSearchSpecPanel spec={latestJobSpec} isLoading={latestSpecLoading} />
 
         <div className="portal-search-row mb-4">
           <div className="portal-search-input flex-1">

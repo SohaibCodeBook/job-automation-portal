@@ -1301,6 +1301,137 @@ html.dark.portal-route [data-slot="dropdown-menu-checkbox-item"]:focus {
 }
 
 /* ─── Scrapped Jobs: list + detail (Phase C) ─── */
+.portal-active-spec {
+  margin-bottom: 1rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--portal-card-elevated, var(--card));
+  padding: 1rem 1.125rem;
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.portal-active-spec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.portal-active-spec-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.625rem;
+  background: color-mix(in oklab, var(--portal-accent, var(--primary)) 14%, transparent);
+  color: var(--portal-accent, var(--primary));
+}
+
+.portal-active-spec-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.portal-active-spec-empty {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.portal-active-spec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.portal-active-spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: color-mix(in oklab, var(--muted) 32%, transparent);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.portal-active-spec-chip[data-accent="blue"] {
+  border-color: color-mix(in oklab, #3b82f6 24%, var(--border));
+  background: color-mix(in oklab, #3b82f6 10%, transparent);
+  color: color-mix(in oklab, #2563eb 85%, var(--foreground));
+}
+
+.portal-active-spec-chip[data-accent="green"] {
+  border-color: color-mix(in oklab, #10b981 24%, var(--border));
+  background: color-mix(in oklab, #10b981 10%, transparent);
+  color: color-mix(in oklab, #059669 85%, var(--foreground));
+}
+
+.portal-active-spec-chip[data-accent="orange"] {
+  border-color: color-mix(in oklab, #f59e0b 24%, var(--border));
+  background: color-mix(in oklab, #f59e0b 10%, transparent);
+  color: color-mix(in oklab, #d97706 85%, var(--foreground));
+}
+
+.portal-active-spec-chip[data-accent="purple"] {
+  border-color: color-mix(in oklab, #8b5cf6 24%, var(--border));
+  background: color-mix(in oklab, #8b5cf6 10%, transparent);
+  color: color-mix(in oklab, #7c3aed 85%, var(--foreground));
+}
+
+.portal-active-spec-chip[data-accent="teal"] {
+  border-color: color-mix(in oklab, #14b8a6 24%, var(--border));
+  background: color-mix(in oklab, #14b8a6 10%, transparent);
+  color: color-mix(in oklab, #0d9488 85%, var(--foreground));
+}
+
+.portal-active-spec-chip--skeleton {
+  width: 7rem;
+  height: 2rem;
+  border-color: transparent;
+  background: color-mix(in oklab, var(--muted) 55%, transparent);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+html.dark .portal-shell .portal-active-spec {
+  border-color: var(--portal-border, var(--border));
+  background: var(--portal-card-elevated, var(--card));
+}
+
+html.dark .portal-shell .portal-active-spec-chip {
+  background: color-mix(in oklab, #ffffff 5%, transparent);
+}
+
+html.dark .portal-shell .portal-active-spec-chip[data-accent="blue"] {
+  background: color-mix(in oklab, #3b82f6 16%, transparent);
+  color: #93c5fd;
+}
+
+html.dark .portal-shell .portal-active-spec-chip[data-accent="green"] {
+  background: color-mix(in oklab, #10b981 16%, transparent);
+  color: #6ee7b7;
+}
+
+html.dark .portal-shell .portal-active-spec-chip[data-accent="orange"] {
+  background: color-mix(in oklab, #f59e0b 16%, transparent);
+  color: #fcd34d;
+}
+
+html.dark .portal-shell .portal-active-spec-chip[data-accent="purple"] {
+  background: color-mix(in oklab, #8b5cf6 16%, transparent);
+  color: #c4b5fd;
+}
+
+html.dark .portal-shell .portal-active-spec-chip[data-accent="teal"] {
+  background: color-mix(in oklab, #14b8a6 16%, transparent);
+  color: #5eead4;
+}
+
 .portal-search-row {
   display: flex;
   flex-wrap: wrap;
