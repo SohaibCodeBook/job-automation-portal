@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useJobApplied } from "@/hooks/use-job-applied";
@@ -67,11 +67,14 @@ export function JobApplyActions({
   if (applied) {
     return (
       <div className={cn("job-card-apply-status", className)}>
-        <div className="job-card-applied-pill">
-          <span className="job-card-applied-badge">Applied</span>
+        <div className="job-card-applied-group">
+          <span className="job-card-applied-btn" aria-label="Applied">
+            <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+            Applied
+          </span>
           <button
             type="button"
-            className="job-card-applied-undo"
+            className="job-card-applied-undo-btn"
             disabled={updating}
             onClick={handleUndo}
           >
