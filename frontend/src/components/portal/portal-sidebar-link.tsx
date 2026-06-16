@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/constants/routes";
 import type { PortalNavItem } from "@/constants/portal-nav";
 
 type PortalSidebarLinkProps = {
@@ -25,7 +26,9 @@ export function PortalSidebarLink({
 
   const isActive =
     item.href != null &&
-    (item.id === "saved"
+    (item.id === "dashboard"
+      ? pathname === ROUTES.dashboard
+      : item.id === "saved"
       ? pathname === "/jobs" && view === "favorites"
       : item.id === "applied"
         ? pathname === "/jobs" && view === "applied"

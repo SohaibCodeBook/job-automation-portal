@@ -25,6 +25,7 @@ class JobListingListItem(BaseModel):
     created_at: datetime | None = None
     is_favorited: bool = False
     is_applied: bool = False
+    applied_at: datetime | None = None
 
 
 class JobListingFavoritesSummaryResponse(BaseModel):
@@ -85,3 +86,4 @@ class JobListingDetailResponse(BaseModel):
     created_at: datetime | None = None
     is_favorited: bool = False
     is_applied: bool = False
+    applied_at: datetime | None = None

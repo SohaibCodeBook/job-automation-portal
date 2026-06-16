@@ -22,6 +22,7 @@ def _to_list_item(
     *,
     is_favorited: bool = False,
     is_applied: bool = False,
+    applied_at: object | None = None,
 ) -> dict[str, Any]:
     return {
         "id": str(listing.id),
@@ -39,6 +40,7 @@ def _to_list_item(
         "created_at": listing.created_at,
         "is_favorited": is_favorited,
         "is_applied": is_applied,
+        "applied_at": applied_at,
     }
 
 
@@ -128,12 +130,17 @@ class JobListingService:
             user_id,
             listing_ids,
         )
+        applied_times = await self._applied.applied_times_for_listings(
+            user_id,
+            listing_ids,
+        )
         return {
             "items": [
                 _to_list_item(
                     row,
                     is_favorited=row.id in favorite_ids,
                     is_applied=row.id in applied_ids,
+                    applied_at=applied_times.get(row.id),
                 )
                 for row in listings
             ],

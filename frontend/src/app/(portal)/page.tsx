@@ -3,5 +3,5 @@ import { redirect } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 
 export default function PortalIndexPage() {
-  redirect(ROUTES.scrappedJobs);
+  redirect(ROUTES.dashboard);
 }

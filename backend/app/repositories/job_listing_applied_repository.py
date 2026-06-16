@@ -56,6 +56,23 @@ class JobListingAppliedRepository:
         result = await self._session.execute(stmt)
         return set(result.scalars().all())
 
+    async def applied_times_for_listings(
+        self,
+        user_id: uuid.UUID,
+        listing_ids: list[uuid.UUID],
+    ) -> dict[uuid.UUID, object]:
+        if not listing_ids:
+            return {}
+        stmt = select(
+            JobListingApplied.job_listing_id,
+            JobListingApplied.applied_at,
+        ).where(
+            JobListingApplied.user_id == user_id,
+            JobListingApplied.job_listing_id.in_(listing_ids),
+        )
+        result = await self._session.execute(stmt)
+        return {row[0]: row[1] for row in result.all()}
+
     async def add(self, user_id: uuid.UUID, listing_id: uuid.UUID) -> None:
         stmt = (
             insert(JobListingApplied)

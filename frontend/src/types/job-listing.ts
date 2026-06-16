@@ -14,6 +14,7 @@ export type JobListingListItem = {
   created_at: string | null;
   is_favorited?: boolean;
   is_applied?: boolean;
+  applied_at?: string | null;
 };
 
 export type JobListingDetail = JobListingListItem & {

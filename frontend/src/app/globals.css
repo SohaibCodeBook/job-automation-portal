@@ -1396,6 +1396,415 @@ html.dark .portal-shell .portal-stat-delta {
   color: var(--portal-success);
 }
 
+/* ─── Dashboard ─── */
+.portal-stat-card--link:hover {
+  border-color: color-mix(in oklab, var(--portal-accent) 28%, var(--border));
+  background: color-mix(in oklab, var(--portal-accent-muted) 35%, var(--portal-card-elevated));
+}
+
+.portal-dashboard-top-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .portal-dashboard-top-grid {
+    grid-template-columns: 1.35fr 0.65fr;
+    align-items: stretch;
+  }
+}
+
+.portal-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .portal-dashboard-grid {
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: stretch;
+  }
+}
+
+.portal-dashboard-panel {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--portal-card-elevated);
+  padding: 1.125rem 1.25rem;
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.portal-dashboard-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.portal-dashboard-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.portal-dashboard-text-link {
+  color: var(--portal-accent, var(--primary));
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.portal-dashboard-text-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Weekly bar chart */
+.portal-dashboard-panel--chart {
+  display: flex;
+  flex-direction: column;
+  min-height: 22rem;
+}
+
+.portal-dashboard-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 11rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.portal-dashboard-chart-day {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.portal-dashboard-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+  height: 10rem;
+}
+
+.portal-dashboard-chart-bar {
+  width: 42%;
+  max-width: 1.75rem;
+  min-height: 0.375rem;
+  border-radius: 0.375rem 0.375rem 0.125rem 0.125rem;
+  transition: height 0.35s ease;
+}
+
+.portal-dashboard-chart-bar--scraped {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, #818cf8 85%, white),
+    color-mix(in oklab, #6366f1 90%, white)
+  );
+}
+
+.portal-dashboard-chart-bar--applied {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, #38bdf8 85%, white),
+    color-mix(in oklab, #0ea5e9 90%, white)
+  );
+}
+
+.portal-dashboard-chart-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.portal-dashboard-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+}
+
+.portal-dashboard-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.portal-dashboard-chart-swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 0.125rem;
+}
+
+.portal-dashboard-chart-swatch--scraped {
+  background: #6366f1;
+}
+
+.portal-dashboard-chart-swatch--applied {
+  background: #0ea5e9;
+}
+
+/* Vertical application pipeline */
+.portal-dashboard-panel--pipeline {
+  display: flex;
+  flex-direction: column;
+  min-height: 22rem;
+}
+
+.portal-dashboard-pipeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.portal-dashboard-pipeline-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.375rem;
+}
+
+.portal-dashboard-pipeline-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--muted) 55%, transparent);
+  overflow: hidden;
+}
+
+.portal-dashboard-pipeline-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.35s ease;
+}
+
+.portal-dashboard-pipeline-fill[data-accent="purple"] {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.portal-dashboard-pipeline-fill[data-accent="blue"] {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.portal-dashboard-pipeline-fill[data-accent="teal"] {
+  background: linear-gradient(90deg, #14b8a6, #2dd4bf);
+}
+
+.portal-dashboard-pipeline-fill[data-accent="orange"] {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.portal-dashboard-pipeline-fill[data-accent="rose"] {
+  background: linear-gradient(90deg, #f43f5e, #fb7185);
+}
+
+.portal-dashboard-pipeline-fill[data-muted="true"] {
+  opacity: 0.35;
+}
+
+.portal-dashboard-conversion {
+  margin-top: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: color-mix(in oklab, var(--muted) 28%, transparent);
+  padding: 0.875rem 1rem;
+}
+
+/* Recent activity feed */
+.portal-dashboard-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.portal-dashboard-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: var(--radius-lg);
+  padding: 0.625rem 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+.portal-dashboard-activity-item:hover {
+  background: color-mix(in oklab, var(--muted) 35%, transparent);
+}
+
+.portal-dashboard-activity-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.625rem;
+  flex-shrink: 0;
+}
+
+.portal-dashboard-activity-icon[data-type="scrape"] {
+  background: color-mix(in oklab, #8b5cf6 16%, transparent);
+  color: #7c3aed;
+}
+
+.portal-dashboard-activity-icon[data-type="applied"] {
+  background: color-mix(in oklab, #14b8a6 16%, transparent);
+  color: #0d9488;
+}
+
+.portal-dashboard-activity-icon[data-type="match"] {
+  background: color-mix(in oklab, #3b82f6 16%, transparent);
+  color: #2563eb;
+}
+
+.portal-dashboard-insight-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  background: color-mix(in oklab, var(--muted) 35%, transparent);
+}
+
+.portal-dashboard-job-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  padding: 0.625rem 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.portal-dashboard-job-row:hover {
+  border-color: color-mix(in oklab, var(--portal-accent) 22%, var(--border));
+  background: color-mix(in oklab, var(--portal-accent-muted) 30%, transparent);
+}
+
+.portal-dashboard-job-logo {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: color-mix(in oklab, var(--portal-accent) 12%, var(--muted));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--portal-accent, var(--primary));
+  flex-shrink: 0;
+}
+
+.portal-dashboard-spec-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--portal-accent) 14%, transparent);
+  color: var(--portal-accent, var(--primary));
+  flex-shrink: 0;
+}
+
+.portal-dashboard-spec-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .portal-dashboard-spec-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .portal-dashboard-spec-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+html.dark .portal-shell .portal-dashboard-panel {
+  border-color: var(--portal-border);
+  background: var(--portal-card-elevated);
+}
+
+html.dark .portal-shell .portal-dashboard-insight-row {
+  background: color-mix(in oklab, #ffffff 4%, transparent);
+}
+
+html.dark .portal-shell .portal-dashboard-chart-bar--scraped {
+  background: linear-gradient(180deg, #818cf8, #6366f1);
+}
+
+html.dark .portal-shell .portal-dashboard-chart-bar--applied {
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+}
+
+html.dark .portal-shell .portal-dashboard-conversion {
+  background: color-mix(in oklab, #ffffff 4%, transparent);
+  border-color: var(--portal-border);
+}
+
+html.dark .portal-shell .portal-dashboard-activity-item:hover {
+  background: color-mix(in oklab, #ffffff 4%, transparent);
+}
+
+html.dark .portal-shell .portal-dashboard-activity-icon[data-type="scrape"] {
+  background: color-mix(in oklab, #8b5cf6 22%, transparent);
+  color: #a78bfa;
+}
+
+html.dark .portal-shell .portal-dashboard-activity-icon[data-type="applied"] {
+  background: color-mix(in oklab, #14b8a6 22%, transparent);
+  color: #5eead4;
+}
+
+html.dark .portal-shell .portal-dashboard-activity-icon[data-type="match"] {
+  background: color-mix(in oklab, #3b82f6 22%, transparent);
+  color: #93c5fd;
+}
+
+html.dark .portal-shell .portal-dashboard-job-row:hover {
+  background: color-mix(in oklab, #3b82f6 10%, transparent);
+  border-color: color-mix(in oklab, #3b82f6 28%, var(--portal-border));
+}
+
+html.dark .portal-shell .portal-stat-card--link:hover {
+  border-color: color-mix(in oklab, #3b82f6 35%, var(--portal-border));
+  background: color-mix(in oklab, #3b82f6 8%, var(--portal-card-elevated));
+}
+
 html.dark .portal-shell .portal-search-input,
 html.dark .portal-shell .portal-filter-select {
   background: #0f1115;

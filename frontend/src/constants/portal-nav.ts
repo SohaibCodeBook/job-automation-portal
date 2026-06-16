@@ -35,9 +35,9 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   {
     id: "dashboard",
     label: "Dashboard",
+    href: ROUTES.dashboard,
     icon: LayoutDashboard,
     section: "main",
-    comingSoon: true,
   },
   {
     id: "scrapped-jobs",
