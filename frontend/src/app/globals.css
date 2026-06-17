@@ -732,6 +732,62 @@ html.portal-route body {
   margin-bottom: 1.5rem;
 }
 
+/* Full-width page toolbar (breaks out of .portal-main-inner padding) */
+.portal-page-toolbar {
+  margin: -1.5rem -1.25rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--portal-card-elevated, var(--card));
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.portal-page-toolbar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.portal-page-toolbar-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.portal-page-toolbar-subtitle {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  line-height: 1.35;
+}
+
+.portal-page-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.portal-page-toolbar-btn-outline {
+  background: transparent;
+}
+
+@media (min-width: 640px) {
+  .portal-page-toolbar {
+    margin: -1.75rem -1.75rem 1.5rem;
+  }
+
+  .portal-page-toolbar-inner {
+    padding: 1.125rem 1.75rem;
+  }
+
+  .portal-page-toolbar-title {
+    font-size: 1.5rem;
+  }
+}
+
 .portal-page-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -1058,6 +1114,30 @@ html.dark .portal-shell .portal-nav-link[data-active="true"]:hover:not(:disabled
 
 html.dark .portal-shell .portal-page-title {
   color: #f3f4f6;
+}
+
+html.dark .portal-shell .portal-page-toolbar {
+  border-bottom-color: var(--portal-border);
+  background: #0f1115;
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, #ffffff 4%, transparent);
+}
+
+html.dark .portal-shell .portal-page-toolbar-title {
+  color: #f3f4f6;
+}
+
+html.dark .portal-shell .portal-page-toolbar-subtitle {
+  color: #8b919a;
+}
+
+html.dark .portal-shell .portal-page-toolbar-btn-outline {
+  border-color: color-mix(in oklab, #ffffff 14%, #1e2128);
+  color: #e8eaed;
+}
+
+html.dark .portal-shell .portal-page-toolbar-btn-outline:hover {
+  background: #1a1d24;
+  border-color: color-mix(in oklab, #ffffff 20%, #2a3038);
 }
 
 html.dark .portal-shell .portal-btn-primary {

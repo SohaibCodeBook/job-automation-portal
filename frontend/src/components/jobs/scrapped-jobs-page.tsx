@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Briefcase,
@@ -18,11 +17,10 @@ import { useSession } from "next-auth/react";
 import { ActiveSearchSpecPanel } from "@/components/jobs/active-search-spec-panel";
 import { JobCard } from "@/components/jobs/job-card";
 import { JobDetailPanel } from "@/components/jobs/job-detail-panel";
-import { JobExportCsvButton } from "@/components/jobs/job-export-csv-button";
 import { JobListEmpty } from "@/components/jobs/job-list-empty";
 import { JobListError } from "@/components/jobs/job-list-error";
 import { JobListSkeleton } from "@/components/jobs/job-list-skeleton";
-import { PortalHeader } from "@/components/portal/portal-header";
+import { ScrappedJobsPageHeader } from "@/components/jobs/scrapped-jobs-page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
@@ -230,28 +228,10 @@ export function ScrappedJobsPage() {
   return (
     <div className={cn("scrapped-jobs-layout", hasDetail && "scrapped-jobs-layout--split")}>
       <div className="scrapped-jobs-main">
-        <PortalHeader
-          title="Scrapped Jobs"
+        <ScrappedJobsPageHeader
           subtitle={formatSyncedLabel(latestCreated)}
-          actions={
-            <>
-              <JobExportCsvButton
-                onExport={handleExportCsv}
-                disabled={exportDisabled}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border"
-                asChild
-              >
-                <Link href={ROUTES.jobSpecs}>Edit Specs</Link>
-              </Button>
-              <Button size="sm" disabled className="portal-btn-primary">
-                Re-Scrape
-              </Button>
-            </>
-          }
+          onExportCsv={handleExportCsv}
+          exportDisabled={exportDisabled}
         />
 
         <div className="portal-stat-grid">
