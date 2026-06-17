@@ -1,16 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 import { DashboardInsightsPanel } from "@/components/dashboard/dashboard-insights-panel";
+import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
 import { DashboardPipeline } from "@/components/dashboard/dashboard-pipeline";
 import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { DashboardWeeklyChart } from "@/components/dashboard/dashboard-weekly-chart";
-import { PortalHeader } from "@/components/portal/portal-header";
 import { Button } from "@/components/ui/button";
-import { ROUTES } from "@/constants/routes";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import {
   displayName,
@@ -51,20 +49,7 @@ export function DashboardPage() {
 
   return (
     <>
-      <PortalHeader
-        title="Dashboard"
-        subtitle={headerSubtitle}
-        actions={
-          <>
-            <Button variant="outline" size="sm" className="border-border" asChild>
-              <Link href={ROUTES.scrappedJobs}>View Jobs</Link>
-            </Button>
-            <Button size="sm" className="portal-btn-primary" asChild>
-              <Link href={ROUTES.jobSpecs}>Edit Specs</Link>
-            </Button>
-          </>
-        }
-      />
+      <DashboardPageHeader subtitle={headerSubtitle} />
 
       {isLoading ? <DashboardSkeleton /> : null}
 
