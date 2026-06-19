@@ -27,8 +27,8 @@ export const JOB_SEARCH_WIZARD_STEPS: WizardStep[] = [
   {
     id: "industry-preferences",
     title: "Step 2 — Industry Preferences",
-    description: "Select target industries and optional NAICS-aligned names.",
-    fields: ["allIndustries", "selectedIndustries", "industryNamesFromNaics"],
+    description: "Select target industries for your job search.",
+    fields: ["allIndustries", "selectedIndustries"],
   },
   {
     id: "work-preferences",

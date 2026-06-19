@@ -11,7 +11,6 @@ export const defaultJobSearchFormValues: JobSearchFormValues = {
   lastName: "",
   allIndustries: false,
   selectedIndustries: [],
-  industryNamesFromNaics: [],
   remote: false,
   hybrid: false,
   onsite: false,
