@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCurrencyForCountryName } from "@/lib/locations";
 import { EMPLOYMENT_TYPE_OPTIONS } from "@/constants/job-search-form";
 import {
+  optionalStringArray,
   requiredStringArray,
   requiredText,
   optionalUrl,
@@ -29,6 +30,7 @@ export const jobSearchFormSchema = z
     lastName: requiredText,
     allIndustries: z.boolean().default(false),
     selectedIndustries: z.array(z.string().trim().min(1)).default([]),
+    industryNamesFromNaics: optionalStringArray,
     remote: z.boolean().default(false),
     hybrid: z.boolean().default(false),
     onsite: z.boolean().default(false),
