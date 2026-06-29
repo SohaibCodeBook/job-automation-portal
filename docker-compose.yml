@@ -24,6 +24,7 @@ services:
     env_file:
       - ./frontend/.env.local
     environment:
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://backend:8000}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
     depends_on:
