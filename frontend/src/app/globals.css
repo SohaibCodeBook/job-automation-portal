@@ -2470,6 +2470,54 @@ html.dark .portal-shell .portal-tab[data-active="true"] {
   margin-bottom: 0.5rem;
 }
 
+.job-detail-notes {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.job-detail-notes-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.job-detail-notes-head .job-detail-section-title {
+  margin-bottom: 0;
+}
+
+.job-detail-notes-meta {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.job-detail-notes-input {
+  min-height: 6.5rem;
+  resize: vertical;
+}
+
+.job-detail-notes-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.job-detail-notes-error {
+  margin-top: 0.5rem;
+}
+
+.job-card-note-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--portal-accent, var(--primary));
+  opacity: 0.85;
+}
+
 .job-detail-prose {
   font-size: 0.875rem;
   line-height: 1.55;

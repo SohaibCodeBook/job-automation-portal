@@ -4,6 +4,7 @@ import * as React from "react";
 import { ExternalLink, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
+import { JobDetailNotes } from "@/components/jobs/job-detail-notes";
 import { Button } from "@/components/ui/button";
 import { getJobListing } from "@/lib/api/job-listings";
 import {
@@ -19,6 +20,11 @@ type JobDetailPanelProps = {
   onClose: () => void;
   activeDateFilter?: JobListingDateFilter;
   className?: string;
+  onNoteUpdated?: (
+    listingId: string,
+    note: string | null,
+    noteUpdatedAt: string | null,
+  ) => void;
 };
 
 function AboutTheRole({ text }: { text: string }) {
@@ -109,6 +115,7 @@ export function JobDetailPanel({
   onClose,
   activeDateFilter,
   className,
+  onNoteUpdated,
 }: JobDetailPanelProps) {
   const { data: session } = useSession();
   const [detail, setDetail] = React.useState<JobListingDetail | null>(null);
@@ -281,6 +288,15 @@ export function JobDetailPanel({
             </div>
 
             {detail.about_job ? <AboutTheRole text={detail.about_job} /> : null}
+
+            <JobDetailNotes
+              listingId={listingId}
+              initialNote={detail.note}
+              initialUpdatedAt={detail.note_updated_at}
+              onNoteUpdated={(note, noteUpdatedAt) =>
+                onNoteUpdated?.(listingId, note, noteUpdatedAt)
+              }
+            />
           </div>
         </>
       ) : null}

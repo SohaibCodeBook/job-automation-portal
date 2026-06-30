@@ -43,6 +43,11 @@ type UseJobListingsResult = {
   dateCountsLoading: boolean;
   refetch: () => void;
   setPage: (page: number) => void;
+  updateItemNote: (
+    listingId: string,
+    note: string | null,
+    noteUpdatedAt: string | null,
+  ) => void;
 };
 
 export function useJobListings(
@@ -68,6 +73,23 @@ export function useJobListings(
   const refetch = React.useCallback(() => {
     setFetchKey((k) => k + 1);
   }, []);
+
+  const updateItemNote = React.useCallback(
+    (
+      listingId: string,
+      note: string | null,
+      noteUpdatedAt: string | null,
+    ) => {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === listingId
+            ? { ...item, note, note_updated_at: noteUpdatedAt }
+            : item,
+        ),
+      );
+    },
+    [],
+  );
 
   React.useEffect(() => {
     setPage(1);
@@ -173,5 +195,6 @@ export function useJobListings(
     dateCountsLoading,
     refetch,
     setPage,
+    updateItemNote,
   };
 }

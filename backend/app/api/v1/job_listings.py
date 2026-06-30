@@ -18,6 +18,8 @@ from app.schemas.job_listing_responses import (
     JobListingFavoriteToggleResponse,
     JobListingFavoritesSummaryResponse,
     JobListingListResponse,
+    JobListingNoteResponse,
+    JobListingNoteUpsertRequest,
 )
 from app.services.job_listing_service import (
     JobListingNotFoundError,
@@ -222,6 +224,57 @@ async def unmark_job_listing_applied(
     try:
         result = await service.unmark_applied(user_id, listing_id)
         return JobListingAppliedToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.put(
+    "/{listing_id}/note",
+    response_model=JobListingNoteResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def upsert_job_listing_note(
+    listing_id: uuid.UUID,
+    body: JobListingNoteUpsertRequest,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingNoteResponse | JSONResponse:
+    try:
+        result = await service.upsert_note(user_id, listing_id, body.note)
+        return JobListingNoteResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.delete(
+    "/{listing_id}/note",
+    response_model=JobListingNoteResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def remove_job_listing_note(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingNoteResponse | JSONResponse:
+    try:
+        result = await service.remove_note(user_id, listing_id)
+        return JobListingNoteResponse(**result)
     except JobListingNotFoundError:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,

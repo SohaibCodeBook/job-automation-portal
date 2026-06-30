@@ -15,6 +15,8 @@ export type JobListingListItem = {
   is_favorited?: boolean;
   is_applied?: boolean;
   applied_at?: string | null;
+  note?: string | null;
+  note_updated_at?: string | null;
 };
 
 export type JobListingDetail = JobListingListItem & {
@@ -71,4 +73,9 @@ export type JobListingAppliedSummary = {
 export type JobListingAppliedToggleResult = {
   applied: boolean;
   count: number;
+};
+
+export type JobListingNoteResult = {
+  note: string | null;
+  note_updated_at: string | null;
 };

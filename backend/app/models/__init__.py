@@ -4,6 +4,7 @@ from app.models.job_application import JobApplication
 from app.models.job_listing import JobListing
 from app.models.job_listing_applied import JobListingApplied
 from app.models.job_listing_favorite import JobListingFavorite
+from app.models.job_listing_note import JobListingNote
 from app.models.user import AuthUser
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "JobListing",
     "JobListingApplied",
     "JobListingFavorite",
+    "JobListingNote",
 ]

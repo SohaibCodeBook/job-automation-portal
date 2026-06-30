@@ -77,6 +77,7 @@ export function ScrappedJobsPage() {
     dateCounts,
     refetch,
     setPage,
+    updateItemNote,
   } = useJobListings({
     dateFilter,
     listedOn: dateFilter === "on_date" ? listedOn : undefined,
@@ -457,6 +458,7 @@ export function ScrappedJobsPage() {
             listingId={selectedId}
             activeDateFilter={dateFilter}
             onClose={() => setSelectedId(null)}
+            onNoteUpdated={updateItemNote}
           />
         </>
       ) : null}

@@ -14,7 +14,17 @@ from app.repositories.job_listing_applied_repository import (
 from app.repositories.job_listing_favorite_repository import (
     JobListingFavoriteRepository,
 )
+from app.repositories.job_listing_note_repository import (
+    JobListingNoteRepository,
+)
 from app.repositories.job_listing_repository import JobListingRepository
+
+
+def _normalize_note(note: str | None) -> str | None:
+    if note is None:
+        return None
+    trimmed = note.strip()
+    return trimmed if trimmed else None
 
 
 def _to_list_item(
@@ -23,6 +33,8 @@ def _to_list_item(
     is_favorited: bool = False,
     is_applied: bool = False,
     applied_at: object | None = None,
+    note: str | None = None,
+    note_updated_at: object | None = None,
 ) -> dict[str, Any]:
     return {
         "id": str(listing.id),
@@ -41,6 +53,8 @@ def _to_list_item(
         "is_favorited": is_favorited,
         "is_applied": is_applied,
         "applied_at": applied_at,
+        "note": note,
+        "note_updated_at": note_updated_at,
     }
 
 
@@ -49,6 +63,9 @@ def _to_detail(
     *,
     is_favorited: bool = False,
     is_applied: bool = False,
+    applied_at: object | None = None,
+    note: str | None = None,
+    note_updated_at: object | None = None,
 ) -> dict[str, Any]:
     return {
         "id": str(listing.id),
@@ -72,6 +89,9 @@ def _to_detail(
         "created_at": listing.created_at,
         "is_favorited": is_favorited,
         "is_applied": is_applied,
+        "applied_at": applied_at,
+        "note": note,
+        "note_updated_at": note_updated_at,
     }
 
 
@@ -94,6 +114,7 @@ class JobListingService:
         self._repo = JobListingRepository(session)
         self._favorites = JobListingFavoriteRepository(session)
         self._applied = JobListingAppliedRepository(session)
+        self._notes = JobListingNoteRepository(session)
 
     async def list_for_user(
         self,
@@ -134,6 +155,7 @@ class JobListingService:
             user_id,
             listing_ids,
         )
+        notes = await self._notes.notes_for_listings(user_id, listing_ids)
         return {
             "items": [
                 _to_list_item(
@@ -141,6 +163,12 @@ class JobListingService:
                     is_favorited=row.id in favorite_ids,
                     is_applied=row.id in applied_ids,
                     applied_at=applied_times.get(row.id),
+                    note=_normalize_note(notes[row.id].note)
+                    if row.id in notes
+                    else None,
+                    note_updated_at=notes[row.id].updated_at
+                    if row.id in notes
+                    else None,
                 )
                 for row in listings
             ],
@@ -181,10 +209,19 @@ class JobListingService:
             user_id,
             [listing.id],
         )
+        applied_times = await self._applied.applied_times_for_listings(
+            user_id,
+            [listing.id],
+        )
+        notes = await self._notes.notes_for_listings(user_id, [listing.id])
+        note_row = notes.get(listing.id)
         return _to_detail(
             listing,
             is_favorited=listing.id in favorite_ids,
             is_applied=listing.id in applied_ids,
+            applied_at=applied_times.get(listing.id),
+            note=_normalize_note(note_row.note) if note_row else None,
+            note_updated_at=note_row.updated_at if note_row else None,
         )
 
     async def favorites_summary_for_user(
@@ -248,3 +285,36 @@ class JobListingService:
         await self._session.commit()
         count = await self._applied.count_for_user(user_id)
         return {"applied": False, "count": count}
+
+    async def upsert_note(
+        self,
+        user_id: uuid.UUID,
+        listing_id: uuid.UUID,
+        note: str,
+    ) -> dict[str, Any]:
+        listing = await self._repo.get_for_user(user_id, listing_id)
+        if listing is None:
+            raise JobListingNotFoundError()
+
+        trimmed = note.strip()
+        if not trimmed:
+            await self._notes.remove(user_id, listing_id)
+            await self._session.commit()
+            return {"note": None, "note_updated_at": None}
+
+        row = await self._notes.upsert(user_id, listing_id, trimmed)
+        await self._session.commit()
+        return {
+            "note": row.note,
+            "note_updated_at": row.updated_at,
+        }
+
+    async def remove_note(
+        self, user_id: uuid.UUID, listing_id: uuid.UUID
+    ) -> dict[str, Any]:
+        listing = await self._repo.get_for_user(user_id, listing_id)
+        if listing is None:
+            raise JobListingNotFoundError()
+        await self._notes.remove(user_id, listing_id)
+        await self._session.commit()
+        return {"note": None, "note_updated_at": None}

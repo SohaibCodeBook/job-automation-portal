@@ -26,6 +26,8 @@ class JobListingListItem(BaseModel):
     is_favorited: bool = False
     is_applied: bool = False
     applied_at: datetime | None = None
+    note: str | None = None
+    note_updated_at: datetime | None = None
 
 
 class JobListingFavoritesSummaryResponse(BaseModel):
@@ -46,6 +48,15 @@ class JobListingFavoriteToggleResponse(BaseModel):
 class JobListingAppliedToggleResponse(BaseModel):
     applied: bool
     count: int
+
+
+class JobListingNoteUpsertRequest(BaseModel):
+    note: str = Field(..., max_length=5000)
+
+
+class JobListingNoteResponse(BaseModel):
+    note: str | None = None
+    note_updated_at: datetime | None = None
 
 
 class JobListingListResponse(BaseModel):
@@ -87,3 +98,5 @@ class JobListingDetailResponse(BaseModel):
     is_favorited: bool = False
     is_applied: bool = False
     applied_at: datetime | None = None
+    note: str | None = None
+    note_updated_at: datetime | None = None

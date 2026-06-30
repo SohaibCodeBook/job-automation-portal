@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Download, FilePenLine, Loader2 } from "lucide-react";
+import { Download, FilePenLine, Loader2, StickyNote } from "lucide-react";
 
 import { JobApplyActions } from "@/components/jobs/job-apply-actions";
 import { JobFavoriteButton } from "@/components/jobs/job-favorite-button";
@@ -102,6 +102,15 @@ export function JobCard({
       <div className="job-card-body min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="job-card-title">{job.title ?? "Untitled role"}</h2>
+          {job.note?.trim() ? (
+            <span
+              className="job-card-note-indicator"
+              title={job.note.trim()}
+              aria-label="Has note"
+            >
+              <StickyNote className="size-3.5" aria-hidden />
+            </span>
+          ) : null}
           {isNew ? <span className="job-card-badge job-card-badge--new">New</span> : null}
         </div>
         <p className="job-card-meta">
