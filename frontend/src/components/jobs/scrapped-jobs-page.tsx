@@ -32,9 +32,7 @@ import { rebuildJobListingResume } from "@/lib/api/job-listings";
 import { exportJobListingsCsv } from "@/lib/export-job-listings-csv";
 import {
   DATE_FILTER_OPTIONS,
-  filterJobListings,
   formatSyncedLabel,
-  uniqueValues,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
 import type { JobListingDateFilter } from "@/types/job-listing";
@@ -66,6 +64,10 @@ export function ScrappedJobsPage() {
 
   const [dateFilter, setDateFilter] = React.useState<JobListingDateFilter>("all");
   const [listedOn, setListedOn] = React.useState("");
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [typeFilter, setTypeFilter] = React.useState("");
+  const [locationFilter, setLocationFilter] = React.useState("");
 
   const {
     items,
@@ -75,6 +77,7 @@ export function ScrappedJobsPage() {
     isLoading,
     error,
     dateCounts,
+    filterOptions,
     refetch,
     setPage,
     updateItemNote,
@@ -83,13 +86,11 @@ export function ScrappedJobsPage() {
     listedOn: dateFilter === "on_date" ? listedOn : undefined,
     favoritesOnly,
     appliedOnly,
+    searchQuery,
+    typeFilter,
+    locationFilter,
   });
   const { spec: latestJobSpec, isLoading: latestSpecLoading } = useLatestJobSpec();
-
-  const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [typeFilter, setTypeFilter] = React.useState("");
-  const [locationFilter, setLocationFilter] = React.useState("");
 
   const latestCreated = React.useMemo(() => {
     let latest: string | null = null;
@@ -102,36 +103,22 @@ export function ScrappedJobsPage() {
 
   const newTodayCount = dateCounts.today;
 
-  const filteredItems = React.useMemo(() => {
-    let list = filterJobListings(items, searchQuery);
-    if (typeFilter) {
-      list = list.filter(
-        (j) =>
-          j.employment_type === typeFilter || j.work_type === typeFilter,
-      );
-    }
-    if (locationFilter) {
-      list = list.filter((j) => j.location === locationFilter);
-    }
-    return list;
-  }, [items, searchQuery, typeFilter, locationFilter]);
-
-  const employmentTypes = React.useMemo(
-    () => uniqueValues(items, "employment_type"),
-    [items],
-  );
-  const workTypes = React.useMemo(() => uniqueValues(items, "work_type"), [items]);
-  const locations = React.useMemo(() => uniqueValues(items, "location"), [items]);
-
   const typeOptions = React.useMemo(
-    () => [...new Set([...employmentTypes, ...workTypes])],
-    [employmentTypes, workTypes],
+    () =>
+      [
+        ...new Set([
+          ...filterOptions.employment_types,
+          ...filterOptions.work_types,
+        ]),
+      ].sort(),
+    [filterOptions.employment_types, filterOptions.work_types],
   );
+  const locations = filterOptions.locations;
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const hasDetail = selectedId != null;
 
-  const hasClientFilters = Boolean(searchQuery || typeFilter || locationFilter);
+  const hasSearchFilters = Boolean(searchQuery || typeFilter || locationFilter);
   const hasDateFilter = dateFilter !== "all";
   const awaitingSpecificDate = dateFilter === "on_date" && !listedOn;
 
@@ -396,17 +383,17 @@ export function ScrappedJobsPage() {
           </p>
         ) : null}
 
-        {!isLoading && !error && !awaitingSpecificDate && filteredItems.length === 0 ? (
+        {!isLoading && !error && !awaitingSpecificDate && items.length === 0 ? (
           <JobListEmpty
-            filtered={hasClientFilters || hasDateFilter}
+            filtered={hasSearchFilters || hasDateFilter}
             favoritesView={favoritesOnly}
             appliedView={appliedOnly}
           />
         ) : null}
 
-        {!isLoading && !error && !awaitingSpecificDate && filteredItems.length > 0 ? (
+        {!isLoading && !error && !awaitingSpecificDate && items.length > 0 ? (
           <div className="job-list space-y-3">
-            {filteredItems.map((job) => (
+            {items.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}

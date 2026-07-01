@@ -127,6 +127,9 @@ class JobListingService:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        search: str | None = None,
+        type_filter: str | None = None,
+        location: str | None = None,
     ) -> dict[str, Any]:
         bucket = _parse_date_filter(date_filter)
         if bucket == ListingDateFilter.ON_DATE and listed_on is None:
@@ -141,6 +144,9 @@ class JobListingService:
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            search=search,
+            type_filter=type_filter,
+            location=location,
         )
         listing_ids = [row.id for row in listings]
         favorite_ids = await self._favorites.favorite_ids_for_listings(
@@ -176,6 +182,29 @@ class JobListingService:
             "page": page,
             "page_size": page_size,
         }
+
+    async def filter_options_for_user(
+        self,
+        user_id: uuid.UUID,
+        *,
+        job_application_id: uuid.UUID | None = None,
+        date_filter: str | None = None,
+        listed_on: date | None = None,
+        favorites_only: bool = False,
+        applied_only: bool = False,
+    ) -> dict[str, Any]:
+        bucket = _parse_date_filter(date_filter)
+        if bucket == ListingDateFilter.ON_DATE and listed_on is None:
+            raise ValueError("listed_on is required when date_filter is on_date.")
+
+        return await self._repo.filter_options_for_user(
+            user_id,
+            job_application_id=job_application_id,
+            date_filter=bucket,
+            listed_on=listed_on,
+            favorites_only=favorites_only,
+            applied_only=applied_only,
+        )
 
     async def date_counts_for_user(
         self,

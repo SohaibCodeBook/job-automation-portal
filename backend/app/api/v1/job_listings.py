@@ -17,6 +17,7 @@ from app.schemas.job_listing_responses import (
     JobListingErrorResponse,
     JobListingFavoriteToggleResponse,
     JobListingFavoritesSummaryResponse,
+    JobListingFilterOptionsResponse,
     JobListingListResponse,
     JobListingNoteResponse,
     JobListingNoteUpsertRequest,
@@ -81,6 +82,40 @@ async def job_listing_applied_summary(
 
 
 @router.get(
+    "/filter-options",
+    response_model=JobListingFilterOptionsResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        400: {"model": JobListingErrorResponse},
+    },
+)
+async def job_listing_filter_options(
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+    job_application_id: uuid.UUID | None = Query(None),
+    date_filter: ListingDateFilter = Query(ListingDateFilter.ALL),
+    listed_on: date | None = Query(None),
+    favorites_only: bool = Query(False),
+    applied_only: bool = Query(False),
+) -> JobListingFilterOptionsResponse | JSONResponse:
+    try:
+        options = await service.filter_options_for_user(
+            user_id,
+            job_application_id=job_application_id,
+            date_filter=date_filter.value,
+            listed_on=listed_on,
+            favorites_only=favorites_only,
+            applied_only=applied_only,
+        )
+        return JobListingFilterOptionsResponse(**options)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get(
     "",
     response_model=JobListingListResponse,
     responses={
@@ -113,6 +148,21 @@ async def list_job_listings(
         False,
         description="When true, return only listings marked applied by the current user.",
     ),
+    search: str | None = Query(
+        None,
+        max_length=200,
+        description="Keyword search across title, company, location, field, work type, and source.",
+    ),
+    type_filter: str | None = Query(
+        None,
+        max_length=200,
+        description="Match employment_type or work_type exactly.",
+    ),
+    location: str | None = Query(
+        None,
+        max_length=500,
+        description="Match location exactly.",
+    ),
 ) -> JobListingListResponse | JSONResponse:
     try:
         result = await service.list_for_user(
@@ -124,6 +174,9 @@ async def list_job_listings(
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            search=search,
+            type_filter=type_filter,
+            location=location,
         )
         return JobListingListResponse(**result)
     except ValueError as exc:

@@ -10,6 +10,7 @@ from app.lib.listing_date_filter import (
     ListingDateFilter,
     created_at_filter_clauses,
 )
+from app.lib.listing_text_filter import listing_text_filter_clauses
 from app.models.job_application import JobApplication
 from app.models.job_listing import JobListing
 from app.models.job_listing_applied import JobListingApplied
@@ -43,10 +44,18 @@ class JobListingRepository:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        search: str | None = None,
+        type_filter: str | None = None,
+        location: str | None = None,
     ) -> list:
         return [
             *self._base_clauses(user_id, job_application_id),
             *created_at_filter_clauses(date_filter, listed_on),
+            *listing_text_filter_clauses(
+                search=search,
+                type_filter=type_filter,
+                location=location,
+            ),
             *(
                 [JobListingFavorite.user_id == user_id]
                 if favorites_only
@@ -70,6 +79,9 @@ class JobListingRepository:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        search: str | None = None,
+        type_filter: str | None = None,
+        location: str | None = None,
     ) -> tuple[list[JobListing], int]:
         offset = (page - 1) * page_size
         join = self._join_on_application()
@@ -80,6 +92,9 @@ class JobListingRepository:
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            search=search,
+            type_filter=type_filter,
+            location=location,
         )
 
         count_stmt = (
@@ -129,6 +144,56 @@ class JobListingRepository:
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all()), total
+
+    async def filter_options_for_user(
+        self,
+        user_id: uuid.UUID,
+        *,
+        job_application_id: uuid.UUID | None = None,
+        date_filter: ListingDateFilter | None = None,
+        listed_on: date | None = None,
+        favorites_only: bool = False,
+        applied_only: bool = False,
+    ) -> dict[str, list[str]]:
+        join = self._join_on_application()
+        clauses = self._all_clauses(
+            user_id,
+            job_application_id=job_application_id,
+            date_filter=date_filter,
+            listed_on=listed_on,
+            favorites_only=favorites_only,
+            applied_only=applied_only,
+        )
+
+        async def distinct_values(column) -> list[str]:
+            stmt = (
+                select(column)
+                .select_from(JobListing)
+                .join(JobApplication, join)
+            )
+            if favorites_only:
+                stmt = stmt.join(
+                    JobListingFavorite,
+                    JobListingFavorite.job_listing_id == JobListing.id,
+                )
+            if applied_only:
+                stmt = stmt.join(
+                    JobListingApplied,
+                    JobListingApplied.job_listing_id == JobListing.id,
+                )
+            stmt = (
+                stmt.where(*clauses, column.is_not(None), column != "")
+                .distinct()
+                .order_by(column)
+            )
+            result = await self._session.execute(stmt)
+            return list(result.scalars().all())
+
+        return {
+            "employment_types": await distinct_values(JobListing.employment_type),
+            "work_types": await distinct_values(JobListing.work_type),
+            "locations": await distinct_values(JobListing.location),
+        }
 
     async def count_by_date_filters(
         self,

@@ -59,6 +59,12 @@ class JobListingNoteResponse(BaseModel):
     note_updated_at: datetime | None = None
 
 
+class JobListingFilterOptionsResponse(BaseModel):
+    employment_types: list[str]
+    work_types: list[str]
+    locations: list[str]
+
+
 class JobListingListResponse(BaseModel):
     items: list[JobListingListItem]
     total: int

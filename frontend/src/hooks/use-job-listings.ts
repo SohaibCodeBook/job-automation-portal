@@ -5,15 +5,18 @@ import { useSession } from "next-auth/react";
 
 import {
   getJobListingDateCounts,
+  getJobListingFilterOptions,
   listJobListings,
 } from "@/lib/api/job-listings";
 import type {
   JobListingDateCounts,
   JobListingDateFilter,
+  JobListingFilterOptions,
   JobListingListItem,
 } from "@/types/job-listing";
 
 const DEFAULT_PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 300;
 
 const EMPTY_DATE_COUNTS: JobListingDateCounts = {
   all: 0,
@@ -24,12 +27,21 @@ const EMPTY_DATE_COUNTS: JobListingDateCounts = {
   older: 0,
 };
 
+const EMPTY_FILTER_OPTIONS: JobListingFilterOptions = {
+  employment_types: [],
+  work_types: [],
+  locations: [],
+};
+
 type UseJobListingsOptions = {
   pageSize?: number;
   dateFilter?: JobListingDateFilter;
   listedOn?: string;
   favoritesOnly?: boolean;
   appliedOnly?: boolean;
+  searchQuery?: string;
+  typeFilter?: string;
+  locationFilter?: string;
 };
 
 type UseJobListingsResult = {
@@ -41,6 +53,8 @@ type UseJobListingsResult = {
   error: string | null;
   dateCounts: JobListingDateCounts;
   dateCountsLoading: boolean;
+  filterOptions: JobListingFilterOptions;
+  filterOptionsLoading: boolean;
   refetch: () => void;
   setPage: (page: number) => void;
   updateItemNote: (
@@ -58,6 +72,9 @@ export function useJobListings(
   const listedOn = options.listedOn;
   const favoritesOnly = options.favoritesOnly ?? false;
   const appliedOnly = options.appliedOnly ?? false;
+  const searchQuery = options.searchQuery ?? "";
+  const typeFilter = options.typeFilter ?? "";
+  const locationFilter = options.locationFilter ?? "";
 
   const { data: session, status: sessionStatus } = useSession();
   const [page, setPage] = React.useState(1);
@@ -68,7 +85,11 @@ export function useJobListings(
   const [dateCounts, setDateCounts] =
     React.useState<JobListingDateCounts>(EMPTY_DATE_COUNTS);
   const [dateCountsLoading, setDateCountsLoading] = React.useState(true);
+  const [filterOptions, setFilterOptions] =
+    React.useState<JobListingFilterOptions>(EMPTY_FILTER_OPTIONS);
+  const [filterOptionsLoading, setFilterOptionsLoading] = React.useState(true);
   const [fetchKey, setFetchKey] = React.useState(0);
+  const [debouncedSearch, setDebouncedSearch] = React.useState(searchQuery);
 
   const refetch = React.useCallback(() => {
     setFetchKey((k) => k + 1);
@@ -92,8 +113,23 @@ export function useJobListings(
   );
 
   React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
+
+  React.useEffect(() => {
     setPage(1);
-  }, [dateFilter, listedOn, favoritesOnly, appliedOnly]);
+  }, [
+    dateFilter,
+    listedOn,
+    favoritesOnly,
+    appliedOnly,
+    debouncedSearch,
+    typeFilter,
+    locationFilter,
+  ]);
 
   React.useEffect(() => {
     const token = session?.accessToken;
@@ -127,6 +163,53 @@ export function useJobListings(
     const token = session?.accessToken;
     if (sessionStatus === "loading") return;
     if (!token) {
+      setFilterOptionsLoading(false);
+      setFilterOptions(EMPTY_FILTER_OPTIONS);
+      return;
+    }
+
+    if (dateFilter === "on_date" && !listedOn) {
+      setFilterOptionsLoading(false);
+      setFilterOptions(EMPTY_FILTER_OPTIONS);
+      return;
+    }
+
+    let cancelled = false;
+    setFilterOptionsLoading(true);
+
+    getJobListingFilterOptions(token, {
+      dateFilter,
+      listedOn,
+      favoritesOnly,
+      appliedOnly,
+    })
+      .then((options) => {
+        if (!cancelled) setFilterOptions(options);
+      })
+      .catch(() => {
+        if (!cancelled) setFilterOptions(EMPTY_FILTER_OPTIONS);
+      })
+      .finally(() => {
+        if (!cancelled) setFilterOptionsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    session?.accessToken,
+    sessionStatus,
+    dateFilter,
+    listedOn,
+    favoritesOnly,
+    appliedOnly,
+    fetchKey,
+  ]);
+
+  React.useEffect(() => {
+    const token = session?.accessToken;
+    if (sessionStatus === "loading") return;
+    if (!token) {
       setIsLoading(false);
       setError("Sign in to view scrapped jobs.");
       setItems([]);
@@ -153,6 +236,9 @@ export function useJobListings(
       listedOn,
       favoritesOnly,
       appliedOnly,
+      search: debouncedSearch,
+      typeFilter,
+      location: locationFilter,
     })
       .then((res) => {
         if (cancelled) return;
@@ -181,6 +267,9 @@ export function useJobListings(
     listedOn,
     favoritesOnly,
     appliedOnly,
+    debouncedSearch,
+    typeFilter,
+    locationFilter,
     fetchKey,
   ]);
 
@@ -193,6 +282,8 @@ export function useJobListings(
     error,
     dateCounts,
     dateCountsLoading,
+    filterOptions,
+    filterOptionsLoading,
     refetch,
     setPage,
     updateItemNote,

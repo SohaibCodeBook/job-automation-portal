@@ -79,3 +79,9 @@ export type JobListingNoteResult = {
   note: string | null;
   note_updated_at: string | null;
 };
+
+export type JobListingFilterOptions = {
+  employment_types: string[];
+  work_types: string[];
+  locations: string[];
+};
