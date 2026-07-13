@@ -60,6 +60,11 @@ class UserMeResponse(BaseModel):
     email_verified: bool
 
 
+class DeleteAccountResponse(BaseModel):
+    ok: bool = True
+    message: str = "Your account has been deleted."
+
+
 class GoogleProfilePayload(BaseModel):
     email: str | None = None
     name: str | None = None

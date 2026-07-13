@@ -3,5 +3,6 @@ export const ROUTES = {
   dashboard: "/dashboard",
   scrappedJobs: "/jobs",
   jobSpecs: "/job-specs",
+  settings: "/settings",
   login: "/login",
 } as const;

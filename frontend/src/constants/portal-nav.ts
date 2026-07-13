@@ -88,8 +88,8 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   {
     id: "settings",
     label: "Settings",
+    href: ROUTES.settings,
     icon: Settings,
     section: "account",
-    comingSoon: true,
   },
 ];

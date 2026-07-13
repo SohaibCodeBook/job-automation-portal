@@ -20,11 +20,16 @@ from app.core.security import (
     verify_password_reset_token,
 )
 from app.repositories.user_repository import UserRepository
+from app.repositories.job_application_repository import JobApplicationRepository
+from app.repositories.job_listing_applied_repository import JobListingAppliedRepository
+from app.repositories.job_listing_favorite_repository import JobListingFavoriteRepository
+from app.repositories.job_listing_note_repository import JobListingNoteRepository
 from app.services.email_service import (
     SmtpConfigurationError,
     send_email_verification_message,
     send_password_reset_email,
 )
+from app.services.resume_storage import delete_user_resume_tree
 
 BCRYPT_ROUNDS = 12
 
@@ -58,6 +63,10 @@ def _verify_password(password: str, stored_hash: str) -> bool:
 class AuthService:
     def __init__(self, session: AsyncSession) -> None:
         self._users = UserRepository(session)
+        self._applications = JobApplicationRepository(session)
+        self._favorites = JobListingFavoriteRepository(session)
+        self._applied = JobListingAppliedRepository(session)
+        self._notes = JobListingNoteRepository(session)
         self._session = session
 
     async def register(
@@ -244,3 +253,21 @@ class AuthService:
             "name": _display_name(user.raw_user_meta_data, user.email),
             "email_verified": user.email_confirmed_at is not None,
         }
+
+    async def delete_account(self, user_id: uuid.UUID) -> None:
+        """Delete personal account data. Scraped job listings are kept."""
+        user = await self._users.get_user_profile(user_id)
+        if user is None:
+            raise AuthError("User not found.", code="not_found")
+
+        await self._favorites.delete_all_for_user(user_id)
+        await self._applied.delete_all_for_user(user_id)
+        await self._notes.delete_all_for_user(user_id)
+        await self._applications.anonymize_for_user(user_id)
+
+        deleted = await self._users.soft_delete_account(user_id)
+        if not deleted:
+            raise AuthError("User not found.", code="not_found")
+
+        await self._session.commit()
+        delete_user_resume_tree(user_id)

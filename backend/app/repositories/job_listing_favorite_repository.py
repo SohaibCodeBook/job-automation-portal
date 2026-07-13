@@ -72,3 +72,7 @@ class JobListingFavoriteRepository:
             JobListingFavorite.job_listing_id == listing_id,
         )
         await self._session.execute(stmt)
+
+    async def delete_all_for_user(self, user_id: uuid.UUID) -> None:
+        stmt = delete(JobListingFavorite).where(JobListingFavorite.user_id == user_id)
+        await self._session.execute(stmt)

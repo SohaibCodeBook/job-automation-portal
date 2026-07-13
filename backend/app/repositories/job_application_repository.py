@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.job_application import JobApplication
@@ -68,3 +68,18 @@ class JobApplicationRepository:
             raise ValueError("Job application not found.")
         app.resume_storage_key = storage_key
         await self._session.flush()
+
+    async def anonymize_for_user(self, user_id: uuid.UUID) -> None:
+        """Detach specs from the user and scrub PII. Scraped listings stay linked."""
+        stmt = (
+            update(JobApplication)
+            .where(JobApplication.user_id == user_id)
+            .values(
+                user_id=None,
+                first_name=None,
+                last_name=None,
+                resume_url=None,
+                resume_storage_key=None,
+            )
+        )
+        await self._session.execute(stmt)

@@ -206,3 +206,30 @@ class UserRepository:
         )
         result = await self._session.execute(stmt, {"email": normalized})
         return result.scalar_one_or_none() is not None
+
+    async def soft_delete_account(self, user_id: uuid.UUID) -> bool:
+        """Mark the user deleted and scrub identity so the same email can re-register fresh."""
+        now = datetime.now(UTC)
+        anonymized_email = f"deleted-{user_id}@deleted.invalid"
+        stmt = (
+            update(AuthUser)
+            .where(AuthUser.id == user_id, AuthUser.deleted_at.is_(None))
+            .values(
+                deleted_at=now,
+                updated_at=now,
+                email=anonymized_email,
+                encrypted_password=None,
+                phone=None,
+                raw_user_meta_data={},
+                raw_app_meta_data={"provider": "deleted", "providers": []},
+                confirmation_token=None,
+                recovery_token=None,
+                email_change_token_new=None,
+                email_change_token_current=None,
+                email_change=None,
+                reauthentication_token=None,
+            )
+            .returning(AuthUser.id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none() is not None

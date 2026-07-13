@@ -89,3 +89,7 @@ class JobListingAppliedRepository:
             JobListingApplied.job_listing_id == listing_id,
         )
         await self._session.execute(stmt)
+
+    async def delete_all_for_user(self, user_id: uuid.UUID) -> None:
+        stmt = delete(JobListingApplied).where(JobListingApplied.user_id == user_id)
+        await self._session.execute(stmt)

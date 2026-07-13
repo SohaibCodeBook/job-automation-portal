@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 import uuid
 from pathlib import Path
 
@@ -82,6 +83,17 @@ def read_resume_file(storage_key: str) -> bytes:
     if not path.is_file():
         raise ResumeStorageError("Resume file not found in storage.")
     return path.read_bytes()
+
+
+def delete_user_resume_tree(user_id: uuid.UUID) -> None:
+    """Remove all uploaded resumes for a user under users/{user_id}/."""
+    root = _upload_root()
+    user_dir = (root / "users" / str(user_id)).resolve()
+    if not user_dir.is_dir():
+        return
+    if not user_dir.is_relative_to(root):
+        raise ResumeStorageError("Invalid resume storage path.")
+    shutil.rmtree(user_dir, ignore_errors=True)
 
 
 def safe_download_filename(original: str | None, fallback: str = "resume") -> str:
