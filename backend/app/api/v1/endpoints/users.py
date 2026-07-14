@@ -9,6 +9,7 @@ from app.schemas.auth import (
     ChangePasswordResponse,
     DeleteAccountResponse,
     ErrorResponse,
+    UpdateProfileRequest,
     UserMeResponse,
 )
 from app.services.auth_service import AuthService
@@ -39,6 +40,27 @@ async def get_me(
 ) -> UserMeResponse | JSONResponse:
     try:
         profile = await auth.get_me(user_id)
+        return UserMeResponse(**profile)
+    except AuthError as exc:
+        return _auth_error_response(exc)
+
+
+@router.patch(
+    "/me",
+    response_model=UserMeResponse,
+    responses={
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+    },
+)
+async def update_me(
+    body: UpdateProfileRequest,
+    user_id=Depends(get_current_user_id),
+    auth: AuthService = Depends(get_auth_service),
+) -> UserMeResponse | JSONResponse:
+    try:
+        profile = await auth.update_profile(user_id, name=body.name)
         return UserMeResponse(**profile)
     except AuthError as exc:
         return _auth_error_response(exc)

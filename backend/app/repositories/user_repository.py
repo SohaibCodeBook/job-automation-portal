@@ -7,6 +7,7 @@ from typing import Any
 
 from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.models.user import AuthUser
 
@@ -141,6 +142,19 @@ class UserRepository:
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
+
+    async def update_display_name(self, user_id: uuid.UUID, full_name: str) -> bool:
+        user = await self.get_user_profile(user_id)
+        if user is None:
+            return False
+        meta = dict(user.raw_user_meta_data or {})
+        meta["name"] = full_name
+        meta["full_name"] = full_name
+        user.raw_user_meta_data = meta
+        flag_modified(user, "raw_user_meta_data")
+        user.updated_at = datetime.now(UTC)
+        await self._session.flush()
+        return True
 
     async def insert_google_auth_user(
         self,

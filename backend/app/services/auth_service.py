@@ -256,6 +256,17 @@ class AuthService:
             "auth_provider": "credentials" if has_password else "google",
         }
 
+    async def update_profile(self, user_id: uuid.UUID, *, name: str) -> dict[str, Any]:
+        full_name = name.strip()
+        if not full_name:
+            raise AuthError("Name is required.", code="validation_error")
+
+        updated = await self._users.update_display_name(user_id, full_name)
+        if not updated:
+            raise AuthError("User not found.", code="not_found")
+        await self._session.commit()
+        return await self.get_me(user_id)
+
     async def change_password(
         self,
         user_id: uuid.UUID,

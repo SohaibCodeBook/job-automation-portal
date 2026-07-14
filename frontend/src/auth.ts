@@ -102,7 +102,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return true;
     },
-    async jwt({ token, account, profile, user }) {
+    async jwt({ token, account, profile, user, trigger, session }) {
+      if (trigger === "update" && session && typeof session === "object") {
+        const nextName =
+          "name" in session && typeof session.name === "string"
+            ? session.name.trim()
+            : null;
+        if (nextName) {
+          token.name = nextName;
+        }
+        return token;
+      }
+
       if (account?.provider === "credentials" && user?.id) {
         token.sub = user.id;
         if (typeof user.email === "string") token.email = user.email;
