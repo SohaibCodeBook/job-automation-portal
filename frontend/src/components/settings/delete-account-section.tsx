@@ -76,8 +76,7 @@ export function DeleteAccountSection() {
           <li>Favorites, applied marks, and private notes are deleted</li>
           <li>Uploaded resumes are deleted</li>
           <li>
-            Scraped job listings stay in the system, but will not appear if you
-            create a new account with the same email
+            Scraped job listings are deleted
           </li>
         </ul>
 
