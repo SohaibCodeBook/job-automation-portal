@@ -4,6 +4,7 @@ import * as React from "react";
 import { useSession } from "next-auth/react";
 
 import { PortalHeader } from "@/components/portal";
+import { ChangePasswordSection } from "@/components/settings/change-password-section";
 import { DeleteAccountSection } from "@/components/settings/delete-account-section";
 import { getCurrentUser, type UserMe } from "@/lib/api/users";
 
@@ -68,9 +69,22 @@ export function SettingsPage() {
               {profile?.email ?? session?.user?.email ?? "—"}
             </dd>
           </div>
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Sign-in method
+            </dt>
+            <dd className="mt-1 text-sm text-foreground">
+              {profile?.auth_provider === "google"
+                ? "Google"
+                : profile?.auth_provider === "credentials"
+                  ? "Email & password"
+                  : "—"}
+            </dd>
+          </div>
         </dl>
       </section>
 
+      <ChangePasswordSection authProvider={profile?.auth_provider ?? null} />
       <DeleteAccountSection />
     </div>
   );

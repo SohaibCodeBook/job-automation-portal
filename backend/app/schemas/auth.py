@@ -58,6 +58,17 @@ class UserMeResponse(BaseModel):
     email: str
     name: str
     email_verified: bool
+    auth_provider: Literal["credentials", "google"]
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class ChangePasswordResponse(BaseModel):
+    ok: bool = True
+    message: str = "Password updated."
 
 
 class DeleteAccountResponse(BaseModel):

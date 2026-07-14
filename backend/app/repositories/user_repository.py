@@ -130,6 +130,18 @@ class UserRepository:
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
+    async def update_password_hash_by_id(
+        self, user_id: uuid.UUID, password_hash: str
+    ) -> bool:
+        stmt = (
+            update(AuthUser)
+            .where(AuthUser.id == user_id, AuthUser.deleted_at.is_(None))
+            .values(encrypted_password=password_hash, updated_at=datetime.now(UTC))
+            .returning(AuthUser.id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none() is not None
+
     async def insert_google_auth_user(
         self,
         *,

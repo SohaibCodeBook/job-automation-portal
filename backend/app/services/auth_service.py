@@ -247,12 +247,47 @@ class AuthService:
         user = await self._users.get_user_profile(user_id)
         if user is None or user.email is None:
             raise AuthError("User not found.", code="not_found")
+        has_password = bool(user.encrypted_password)
         return {
             "id": str(user.id),
             "email": user.email,
             "name": _display_name(user.raw_user_meta_data, user.email),
             "email_verified": user.email_confirmed_at is not None,
+            "auth_provider": "credentials" if has_password else "google",
         }
+
+    async def change_password(
+        self,
+        user_id: uuid.UUID,
+        *,
+        current_password: str,
+        new_password: str,
+    ) -> None:
+        user = await self._users.get_user_profile(user_id)
+        if user is None:
+            raise AuthError("User not found.", code="not_found")
+
+        stored = user.encrypted_password
+        if stored is None or stored == "":
+            raise GoogleOnlyAccountError()
+
+        if not _verify_password(current_password, stored):
+            raise AuthError(
+                "Current password is incorrect.",
+                code="invalid_credentials",
+            )
+
+        if current_password == new_password:
+            raise AuthError(
+                "New password must be different from your current password.",
+                code="validation_error",
+            )
+
+        password_hash = _hash_password(new_password)
+        updated = await self._users.update_password_hash_by_id(user_id, password_hash)
+        if not updated:
+            raise AuthError("User not found.", code="not_found")
+        await self._session.commit()
 
     async def delete_account(self, user_id: uuid.UUID) -> None:
         """Delete personal account data. Scraped job listings are kept."""
