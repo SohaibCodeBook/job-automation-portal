@@ -42,14 +42,16 @@ class JobListingRepository:
         *,
         archived_only: bool = False,
     ) -> list:
+        # archived_only uses an INNER JOIN (like favorites); filter by user there.
+        # Active lists use NOT EXISTS so we don't join the archives table.
+        if archived_only:
+            return [JobListingArchive.user_id == user_id]
         archived_exists = exists(
             select(JobListingArchive.id).where(
                 JobListingArchive.job_listing_id == JobListing.id,
                 JobListingArchive.user_id == user_id,
             )
         )
-        if archived_only:
-            return [archived_exists]
         return [~archived_exists]
 
     def _all_clauses(
