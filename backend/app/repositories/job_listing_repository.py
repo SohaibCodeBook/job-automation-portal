@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.lib.listing_date_filter import (
@@ -14,6 +14,7 @@ from app.lib.listing_text_filter import listing_text_filter_clauses
 from app.models.job_application import JobApplication
 from app.models.job_listing import JobListing
 from app.models.job_listing_applied import JobListingApplied
+from app.models.job_listing_archive import JobListingArchive
 from app.models.job_listing_favorite import JobListingFavorite
 
 
@@ -35,6 +36,22 @@ class JobListingRepository:
             clauses.append(JobListing.job_application_id == job_application_id)
         return clauses
 
+    @staticmethod
+    def _archive_clauses(
+        user_id: uuid.UUID,
+        *,
+        archived_only: bool = False,
+    ) -> list:
+        archived_exists = exists(
+            select(JobListingArchive.id).where(
+                JobListingArchive.job_listing_id == JobListing.id,
+                JobListingArchive.user_id == user_id,
+            )
+        )
+        if archived_only:
+            return [archived_exists]
+        return [~archived_exists]
+
     def _all_clauses(
         self,
         user_id: uuid.UUID,
@@ -44,28 +61,22 @@ class JobListingRepository:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        archived_only: bool = False,
         search: str | None = None,
         type_filter: str | None = None,
         location: str | None = None,
     ) -> list:
         return [
             *self._base_clauses(user_id, job_application_id),
+            *self._archive_clauses(user_id, archived_only=archived_only),
             *created_at_filter_clauses(date_filter, listed_on),
             *listing_text_filter_clauses(
                 search=search,
                 type_filter=type_filter,
                 location=location,
             ),
-            *(
-                [JobListingFavorite.user_id == user_id]
-                if favorites_only
-                else []
-            ),
-            *(
-                [JobListingApplied.user_id == user_id]
-                if applied_only
-                else []
-            ),
+            *([JobListingFavorite.user_id == user_id] if favorites_only else []),
+            *([JobListingApplied.user_id == user_id] if applied_only else []),
         ]
 
     async def list_for_user(
@@ -79,6 +90,7 @@ class JobListingRepository:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        archived_only: bool = False,
         search: str | None = None,
         type_filter: str | None = None,
         location: str | None = None,
@@ -92,6 +104,7 @@ class JobListingRepository:
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            archived_only=archived_only,
             search=search,
             type_filter=type_filter,
             location=location,
@@ -121,6 +134,15 @@ class JobListingRepository:
                 JobListingApplied,
                 JobListingApplied.job_listing_id == JobListing.id,
             )
+        if archived_only:
+            count_stmt = count_stmt.join(
+                JobListingArchive,
+                JobListingArchive.job_listing_id == JobListing.id,
+            )
+            listings_stmt = listings_stmt.join(
+                JobListingArchive,
+                JobListingArchive.job_listing_id == JobListing.id,
+            )
 
         count_stmt = count_stmt.where(*clauses)
         total = int((await self._session.execute(count_stmt)).scalar_one())
@@ -134,10 +156,14 @@ class JobListingRepository:
                 JobListingApplied.applied_at.desc(),
                 JobListing.id.desc(),
             ]
+        if archived_only:
+            order_by = [
+                JobListingArchive.created_at.desc(),
+                JobListing.id.desc(),
+            ]
 
         stmt = (
-            listings_stmt
-            .where(*clauses)
+            listings_stmt.where(*clauses)
             .order_by(*order_by)
             .offset(offset)
             .limit(page_size)
@@ -154,6 +180,7 @@ class JobListingRepository:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        archived_only: bool = False,
     ) -> dict[str, list[str]]:
         join = self._join_on_application()
         clauses = self._all_clauses(
@@ -163,6 +190,7 @@ class JobListingRepository:
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            archived_only=archived_only,
         )
 
         async def distinct_values(column) -> list[str]:
@@ -180,6 +208,11 @@ class JobListingRepository:
                 stmt = stmt.join(
                     JobListingApplied,
                     JobListingApplied.job_listing_id == JobListing.id,
+                )
+            if archived_only:
+                stmt = stmt.join(
+                    JobListingArchive,
+                    JobListingArchive.job_listing_id == JobListing.id,
                 )
             stmt = (
                 stmt.where(*clauses, column.is_not(None), column != "")
@@ -201,7 +234,7 @@ class JobListingRepository:
         *,
         job_application_id: uuid.UUID | None = None,
     ) -> dict[str, int]:
-        """Totals per date bucket across all listings for the user."""
+        """Totals per date bucket across active (non-archived) listings."""
         counts: dict[str, int] = {}
         for bucket in (
             ListingDateFilter.ALL,
@@ -238,3 +271,19 @@ class JobListingRepository:
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def list_owned_ids(
+        self, user_id: uuid.UUID, listing_ids: list[uuid.UUID]
+    ) -> list[uuid.UUID]:
+        if not listing_ids:
+            return []
+        stmt = (
+            select(JobListing.id)
+            .join(JobApplication, self._join_on_application())
+            .where(
+                JobApplication.user_id == user_id,
+                JobListing.id.in_(listing_ids),
+            )
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())

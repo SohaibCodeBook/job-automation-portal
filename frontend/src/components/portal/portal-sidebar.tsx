@@ -12,12 +12,14 @@ import {
   type PortalNavSectionId,
 } from "@/constants/portal-nav";
 import { useJobApplied } from "@/hooks/use-job-applied";
+import { useJobArchived } from "@/hooks/use-job-archived";
 import { useJobFavorites } from "@/hooks/use-job-favorites";
 
 export function PortalSidebar() {
   const [toast, setToast] = React.useState<string | null>(null);
   const { favoritesCount } = useJobFavorites();
   const { appliedCount } = useJobApplied();
+  const { archivedCount } = useJobArchived();
 
   React.useEffect(() => {
     if (!toast) return;
@@ -61,7 +63,9 @@ export function PortalSidebar() {
                         ? String(favoritesCount)
                         : item.id === "applied" && appliedCount > 0
                           ? String(appliedCount)
-                          : undefined
+                          : item.id === "archived" && archivedCount > 0
+                            ? String(archivedCount)
+                            : undefined
                     }
                     onComingSoon={() =>
                       setToast(`${item.label} is coming soon.`)

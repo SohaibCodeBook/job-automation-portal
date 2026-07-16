@@ -1,3 +1,4 @@
+export { JobBulkToolbar } from "@/components/jobs/job-bulk-toolbar";
 export { JobCard } from "@/components/jobs/job-card";
 export { JobDetailPanel } from "@/components/jobs/job-detail-panel";
 export { JobListEmpty } from "@/components/jobs/job-list-empty";

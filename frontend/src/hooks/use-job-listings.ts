@@ -39,6 +39,7 @@ type UseJobListingsOptions = {
   listedOn?: string;
   favoritesOnly?: boolean;
   appliedOnly?: boolean;
+  archivedOnly?: boolean;
   searchQuery?: string;
   typeFilter?: string;
   locationFilter?: string;
@@ -72,6 +73,7 @@ export function useJobListings(
   const listedOn = options.listedOn;
   const favoritesOnly = options.favoritesOnly ?? false;
   const appliedOnly = options.appliedOnly ?? false;
+  const archivedOnly = options.archivedOnly ?? false;
   const searchQuery = options.searchQuery ?? "";
   const typeFilter = options.typeFilter ?? "";
   const locationFilter = options.locationFilter ?? "";
@@ -126,6 +128,7 @@ export function useJobListings(
     listedOn,
     favoritesOnly,
     appliedOnly,
+    archivedOnly,
     debouncedSearch,
     typeFilter,
     locationFilter,
@@ -182,6 +185,7 @@ export function useJobListings(
       listedOn,
       favoritesOnly,
       appliedOnly,
+      archivedOnly,
     })
       .then((options) => {
         if (!cancelled) setFilterOptions(options);
@@ -203,6 +207,7 @@ export function useJobListings(
     listedOn,
     favoritesOnly,
     appliedOnly,
+    archivedOnly,
     fetchKey,
   ]);
 
@@ -236,6 +241,7 @@ export function useJobListings(
       listedOn,
       favoritesOnly,
       appliedOnly,
+      archivedOnly,
       search: debouncedSearch,
       typeFilter,
       location: locationFilter,
@@ -267,6 +273,7 @@ export function useJobListings(
     listedOn,
     favoritesOnly,
     appliedOnly,
+    archivedOnly,
     debouncedSearch,
     typeFilter,
     locationFilter,

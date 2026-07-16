@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  Archive,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -15,6 +16,7 @@ import {
 import { useSession } from "next-auth/react";
 
 import { ActiveSearchSpecPanel } from "@/components/jobs/active-search-spec-panel";
+import { JobBulkToolbar } from "@/components/jobs/job-bulk-toolbar";
 import { JobCard } from "@/components/jobs/job-card";
 import { JobDetailPanel } from "@/components/jobs/job-detail-panel";
 import { JobListEmpty } from "@/components/jobs/job-list-empty";
@@ -25,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/constants/routes";
 import { useJobApplied } from "@/hooks/use-job-applied";
+import { useJobArchived } from "@/hooks/use-job-archived";
 import { useJobFavorites } from "@/hooks/use-job-favorites";
 import { useJobListings } from "@/hooks/use-job-listings";
 import { useLatestJobSpec } from "@/hooks/use-latest-job-spec";
@@ -37,7 +40,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { JobListingDateFilter } from "@/types/job-listing";
 
-type JobsListView = "all" | "favorites" | "applied";
+type JobsListView = "all" | "favorites" | "applied" | "archived";
 
 export function ScrappedJobsPage() {
   const router = useRouter();
@@ -49,8 +52,15 @@ export function ScrappedJobsPage() {
     appliedCount,
     syncFromListItems: syncAppliedFromListItems,
   } = useJobApplied();
+  const {
+    archivedCount,
+    bulkArchive,
+    refreshArchived,
+    syncFromListItems: syncArchivedFromListItems,
+  } = useJobArchived();
   const prevFavoritesCount = React.useRef(favoritesCount);
   const prevAppliedCount = React.useRef(appliedCount);
+  const prevArchivedCount = React.useRef(archivedCount);
 
   const viewParam = searchParams.get("view");
   const listView: JobsListView =
@@ -58,9 +68,12 @@ export function ScrappedJobsPage() {
       ? "favorites"
       : viewParam === "applied"
         ? "applied"
-        : "all";
+        : viewParam === "archived"
+          ? "archived"
+          : "all";
   const favoritesOnly = listView === "favorites";
   const appliedOnly = listView === "applied";
+  const archivedOnly = listView === "archived";
 
   const [dateFilter, setDateFilter] = React.useState<JobListingDateFilter>("all");
   const [listedOn, setListedOn] = React.useState("");
@@ -68,6 +81,10 @@ export function ScrappedJobsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState("");
   const [locationFilter, setLocationFilter] = React.useState("");
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const [bulkLoading, setBulkLoading] = React.useState(false);
 
   const {
     items,
@@ -86,6 +103,7 @@ export function ScrappedJobsPage() {
     listedOn: dateFilter === "on_date" ? listedOn : undefined,
     favoritesOnly,
     appliedOnly,
+    archivedOnly,
     searchQuery,
     typeFilter,
     locationFilter,
@@ -123,6 +141,18 @@ export function ScrappedJobsPage() {
   const awaitingSpecificDate = dateFilter === "on_date" && !listedOn;
 
   React.useEffect(() => {
+    setSelectedIds(new Set());
+  }, [
+    listView,
+    page,
+    dateFilter,
+    listedOn,
+    searchQuery,
+    typeFilter,
+    locationFilter,
+  ]);
+
+  React.useEffect(() => {
     if (selectedId && !items.some((j) => j.id === selectedId)) {
       setSelectedId(null);
     }
@@ -131,7 +161,13 @@ export function ScrappedJobsPage() {
   React.useEffect(() => {
     syncFavoritesFromListItems(items);
     syncAppliedFromListItems(items);
-  }, [items, syncFavoritesFromListItems, syncAppliedFromListItems]);
+    syncArchivedFromListItems(items);
+  }, [
+    items,
+    syncFavoritesFromListItems,
+    syncAppliedFromListItems,
+    syncArchivedFromListItems,
+  ]);
 
   React.useEffect(() => {
     if (favoritesOnly && prevFavoritesCount.current !== favoritesCount) {
@@ -147,12 +183,21 @@ export function ScrappedJobsPage() {
     prevAppliedCount.current = appliedCount;
   }, [appliedCount, appliedOnly, refetch]);
 
+  React.useEffect(() => {
+    if (archivedOnly && prevArchivedCount.current !== archivedCount) {
+      refetch();
+    }
+    prevArchivedCount.current = archivedCount;
+  }, [archivedCount, archivedOnly, refetch]);
+
   function setListView(next: JobsListView) {
     const params = new URLSearchParams(searchParams.toString());
     if (next === "favorites") {
       params.set("view", "favorites");
     } else if (next === "applied") {
       params.set("view", "applied");
+    } else if (next === "archived") {
+      params.set("view", "archived");
     } else {
       params.delete("view");
     }
@@ -206,6 +251,44 @@ export function ScrappedJobsPage() {
     typeFilter,
     locationFilter,
   ]);
+
+  const handleCheckedChange = React.useCallback(
+    (listingId: string, checked: boolean) => {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        if (checked) next.add(listingId);
+        else next.delete(listingId);
+        return next;
+      });
+    },
+    [],
+  );
+
+  const handleSelectAllOnPage = React.useCallback(() => {
+    setSelectedIds(new Set(items.map((job) => job.id)));
+  }, [items]);
+
+  const handleClearSelection = React.useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBulkArchiveToggle = React.useCallback(
+    async (archived: boolean) => {
+      if (selectedIds.size === 0 || bulkLoading) return;
+      setBulkLoading(true);
+      try {
+        await bulkArchive([...selectedIds], archived);
+        setSelectedIds(new Set());
+        refetch();
+        refreshArchived();
+      } catch {
+        // Errors surface via optimistic rollback in the hook.
+      } finally {
+        setBulkLoading(false);
+      }
+    },
+    [bulkArchive, bulkLoading, refetch, refreshArchived, selectedIds],
+  );
 
   const exportDisabled =
     !session?.accessToken ||
@@ -370,7 +453,29 @@ export function ScrappedJobsPage() {
           >
             Applied ({appliedCount})
           </button>
+          <button
+            type="button"
+            className="portal-tab"
+            data-active={listView === "archived" ? "true" : undefined}
+            onClick={() => setListView("archived")}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Archive className="size-3.5" aria-hidden />
+              Archived ({archivedCount})
+            </span>
+          </button>
         </nav>
+
+        <JobBulkToolbar
+          selectedCount={selectedIds.size}
+          pageItemCount={items.length}
+          archivedView={archivedOnly}
+          isLoading={bulkLoading}
+          onSelectAllOnPage={handleSelectAllOnPage}
+          onClear={handleClearSelection}
+          onArchiveSelected={() => void handleBulkArchiveToggle(true)}
+          onUnarchiveSelected={() => void handleBulkArchiveToggle(false)}
+        />
 
         {isLoading ? <JobListSkeleton /> : null}
         {error && !isLoading ? (
@@ -388,6 +493,7 @@ export function ScrappedJobsPage() {
             filtered={hasSearchFilters || hasDateFilter}
             favoritesView={favoritesOnly}
             appliedView={appliedOnly}
+            archivedView={archivedOnly}
           />
         ) : null}
 
@@ -398,9 +504,14 @@ export function ScrappedJobsPage() {
                 key={job.id}
                 job={job}
                 selected={selectedId === job.id}
+                checked={selectedIds.has(job.id)}
+                selectionMode
                 activeDateFilter={dateFilter}
                 onRebuildResume={handleRebuildResume}
                 onSelect={() => setSelectedId(job.id)}
+                onCheckedChange={(checked) =>
+                  handleCheckedChange(job.id, checked)
+                }
               />
             ))}
           </div>

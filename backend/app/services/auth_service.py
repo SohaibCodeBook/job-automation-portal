@@ -22,6 +22,7 @@ from app.core.security import (
 from app.repositories.user_repository import UserRepository
 from app.repositories.job_application_repository import JobApplicationRepository
 from app.repositories.job_listing_applied_repository import JobListingAppliedRepository
+from app.repositories.job_listing_archive_repository import JobListingArchiveRepository
 from app.repositories.job_listing_favorite_repository import JobListingFavoriteRepository
 from app.repositories.job_listing_note_repository import JobListingNoteRepository
 from app.services.email_service import (
@@ -66,6 +67,7 @@ class AuthService:
         self._applications = JobApplicationRepository(session)
         self._favorites = JobListingFavoriteRepository(session)
         self._applied = JobListingAppliedRepository(session)
+        self._archives = JobListingArchiveRepository(session)
         self._notes = JobListingNoteRepository(session)
         self._session = session
 
@@ -308,6 +310,7 @@ class AuthService:
 
         await self._favorites.delete_all_for_user(user_id)
         await self._applied.delete_all_for_user(user_id)
+        await self._archives.delete_all_for_user(user_id)
         await self._notes.delete_all_for_user(user_id)
         await self._applications.anonymize_for_user(user_id)
 

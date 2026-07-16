@@ -32,10 +32,15 @@ export function PortalSidebarLink({
       ? pathname === "/jobs" && view === "favorites"
       : item.id === "applied"
         ? pathname === "/jobs" && view === "applied"
-        : item.id === "scrapped-jobs"
-          ? pathname === item.href && view !== "favorites" && view !== "applied"
-          : pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
+        : item.id === "archived"
+          ? pathname === "/jobs" && view === "archived"
+          : item.id === "scrapped-jobs"
+            ? pathname === item.href &&
+              view !== "favorites" &&
+              view !== "applied" &&
+              view !== "archived"
+            : pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
 
   const className = cn("portal-nav-link");
   const content = (

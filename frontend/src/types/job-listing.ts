@@ -14,6 +14,7 @@ export type JobListingListItem = {
   created_at: string | null;
   is_favorited?: boolean;
   is_applied?: boolean;
+  is_archived?: boolean;
   applied_at?: string | null;
   note?: string | null;
   note_updated_at?: string | null;
@@ -73,6 +74,22 @@ export type JobListingAppliedSummary = {
 export type JobListingAppliedToggleResult = {
   applied: boolean;
   count: number;
+};
+
+export type JobListingArchivesSummary = {
+  count: number;
+  ids: string[];
+};
+
+export type JobListingArchiveToggleResult = {
+  archived: boolean;
+  count: number;
+};
+
+export type JobListingBulkArchiveResult = {
+  archived: boolean;
+  count: number;
+  updated: number;
 };
 
 export type JobListingNoteResult = {

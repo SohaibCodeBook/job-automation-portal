@@ -18,8 +18,11 @@ import type { JobListingDateFilter, JobListingListItem } from "@/types/job-listi
 type JobCardProps = {
   job: JobListingListItem;
   selected?: boolean;
+  checked?: boolean;
+  selectionMode?: boolean;
   activeDateFilter?: JobListingDateFilter;
   onSelect: () => void;
+  onCheckedChange?: (checked: boolean) => void;
   /** Phase 3: orchestrates extract → rebuild and returns docx blob for download. */
   onRebuildResume?: (listingId: string) => Promise<Blob | null>;
 };
@@ -33,8 +36,11 @@ function buildDownloadFilename(job: JobListingListItem): string {
 export function JobCard({
   job,
   selected = false,
+  checked = false,
+  selectionMode = false,
   activeDateFilter,
   onSelect,
+  onCheckedChange,
   onRebuildResume,
 }: JobCardProps) {
   const [isRebuilding, setIsRebuilding] = React.useState(false);
@@ -43,6 +49,7 @@ export function JobCard({
 
   const initials = companyInitials(job.company);
   const isNew = isNewToday(job.created_at);
+  const showCheckbox = selectionMode || onCheckedChange != null;
   const tags = [
     job.employment_type,
     job.work_type,
@@ -88,6 +95,7 @@ export function JobCard({
       role="button"
       tabIndex={0}
       data-selected={selected ? "true" : undefined}
+      data-checked={checked ? "true" : undefined}
       className={cn("job-card", selected && "job-card--selected")}
       onClick={onSelect}
       onKeyDown={(e) => {
@@ -97,7 +105,24 @@ export function JobCard({
         }
       }}
     >
-      <div className="job-card-logo">{initials}</div>
+      <div className="flex items-start gap-2">
+        {showCheckbox ? (
+          <label
+            className="mt-2 flex shrink-0 cursor-pointer items-center"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              className="size-4 accent-[var(--portal-accent,var(--primary))]"
+              checked={checked}
+              aria-label={`Select ${job.title ?? "job"}`}
+              onChange={(e) => onCheckedChange?.(e.target.checked)}
+            />
+          </label>
+        ) : null}
+        <div className="job-card-logo">{initials}</div>
+      </div>
 
       <div className="job-card-body min-w-0">
         <div className="flex flex-wrap items-center gap-2">

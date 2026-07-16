@@ -11,6 +11,9 @@ from app.models.job_listing import JobListing
 from app.repositories.job_listing_applied_repository import (
     JobListingAppliedRepository,
 )
+from app.repositories.job_listing_archive_repository import (
+    JobListingArchiveRepository,
+)
 from app.repositories.job_listing_favorite_repository import (
     JobListingFavoriteRepository,
 )
@@ -33,6 +36,7 @@ def _to_list_item(
     is_favorited: bool = False,
     is_applied: bool = False,
     applied_at: object | None = None,
+    is_archived: bool = False,
     note: str | None = None,
     note_updated_at: object | None = None,
 ) -> dict[str, Any]:
@@ -53,6 +57,7 @@ def _to_list_item(
         "is_favorited": is_favorited,
         "is_applied": is_applied,
         "applied_at": applied_at,
+        "is_archived": is_archived,
         "note": note,
         "note_updated_at": note_updated_at,
     }
@@ -64,6 +69,7 @@ def _to_detail(
     is_favorited: bool = False,
     is_applied: bool = False,
     applied_at: object | None = None,
+    is_archived: bool = False,
     note: str | None = None,
     note_updated_at: object | None = None,
 ) -> dict[str, Any]:
@@ -90,6 +96,7 @@ def _to_detail(
         "is_favorited": is_favorited,
         "is_applied": is_applied,
         "applied_at": applied_at,
+        "is_archived": is_archived,
         "note": note,
         "note_updated_at": note_updated_at,
     }
@@ -114,6 +121,7 @@ class JobListingService:
         self._repo = JobListingRepository(session)
         self._favorites = JobListingFavoriteRepository(session)
         self._applied = JobListingAppliedRepository(session)
+        self._archives = JobListingArchiveRepository(session)
         self._notes = JobListingNoteRepository(session)
 
     async def list_for_user(
@@ -127,6 +135,7 @@ class JobListingService:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        archived_only: bool = False,
         search: str | None = None,
         type_filter: str | None = None,
         location: str | None = None,
@@ -144,6 +153,7 @@ class JobListingService:
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            archived_only=archived_only,
             search=search,
             type_filter=type_filter,
             location=location,
@@ -161,6 +171,10 @@ class JobListingService:
             user_id,
             listing_ids,
         )
+        archived_ids = await self._archives.archived_ids_for_listings(
+            user_id,
+            listing_ids,
+        )
         notes = await self._notes.notes_for_listings(user_id, listing_ids)
         return {
             "items": [
@@ -169,6 +183,7 @@ class JobListingService:
                     is_favorited=row.id in favorite_ids,
                     is_applied=row.id in applied_ids,
                     applied_at=applied_times.get(row.id),
+                    is_archived=row.id in archived_ids,
                     note=_normalize_note(notes[row.id].note)
                     if row.id in notes
                     else None,
@@ -192,6 +207,7 @@ class JobListingService:
         listed_on: date | None = None,
         favorites_only: bool = False,
         applied_only: bool = False,
+        archived_only: bool = False,
     ) -> dict[str, Any]:
         bucket = _parse_date_filter(date_filter)
         if bucket == ListingDateFilter.ON_DATE and listed_on is None:
@@ -204,6 +220,7 @@ class JobListingService:
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            archived_only=archived_only,
         )
 
     async def date_counts_for_user(
@@ -242,6 +259,10 @@ class JobListingService:
             user_id,
             [listing.id],
         )
+        archived_ids = await self._archives.archived_ids_for_listings(
+            user_id,
+            [listing.id],
+        )
         notes = await self._notes.notes_for_listings(user_id, [listing.id])
         note_row = notes.get(listing.id)
         return _to_detail(
@@ -249,6 +270,7 @@ class JobListingService:
             is_favorited=listing.id in favorite_ids,
             is_applied=listing.id in applied_ids,
             applied_at=applied_times.get(listing.id),
+            is_archived=listing.id in archived_ids,
             note=_normalize_note(note_row.note) if note_row else None,
             note_updated_at=note_row.updated_at if note_row else None,
         )
@@ -266,6 +288,15 @@ class JobListingService:
         self, user_id: uuid.UUID
     ) -> dict[str, Any]:
         ids = await self._applied.list_ids_for_user(user_id)
+        return {
+            "count": len(ids),
+            "ids": [str(listing_id) for listing_id in ids],
+        }
+
+    async def archives_summary_for_user(
+        self, user_id: uuid.UUID
+    ) -> dict[str, Any]:
+        ids = await self._archives.list_ids_for_user(user_id)
         return {
             "count": len(ids),
             "ids": [str(listing_id) for listing_id in ids],
@@ -314,6 +345,47 @@ class JobListingService:
         await self._session.commit()
         count = await self._applied.count_for_user(user_id)
         return {"applied": False, "count": count}
+
+    async def archive(
+        self, user_id: uuid.UUID, listing_id: uuid.UUID
+    ) -> dict[str, Any]:
+        listing = await self._repo.get_for_user(user_id, listing_id)
+        if listing is None:
+            raise JobListingNotFoundError()
+        await self._archives.add(user_id, listing_id)
+        await self._session.commit()
+        count = await self._archives.count_for_user(user_id)
+        return {"archived": True, "count": count}
+
+    async def unarchive(
+        self, user_id: uuid.UUID, listing_id: uuid.UUID
+    ) -> dict[str, Any]:
+        listing = await self._repo.get_for_user(user_id, listing_id)
+        if listing is None:
+            raise JobListingNotFoundError()
+        await self._archives.remove(user_id, listing_id)
+        await self._session.commit()
+        count = await self._archives.count_for_user(user_id)
+        return {"archived": False, "count": count}
+
+    async def bulk_set_archived(
+        self,
+        user_id: uuid.UUID,
+        listing_ids: list[uuid.UUID],
+        archived: bool,
+    ) -> dict[str, Any]:
+        owned_ids = await self._repo.list_owned_ids(user_id, listing_ids)
+        if archived:
+            await self._archives.add_many(user_id, owned_ids)
+        else:
+            await self._archives.remove_many(user_id, owned_ids)
+        await self._session.commit()
+        count = await self._archives.count_for_user(user_id)
+        return {
+            "archived": archived,
+            "count": count,
+            "updated": len(owned_ids),
+        }
 
     async def upsert_note(
         self,

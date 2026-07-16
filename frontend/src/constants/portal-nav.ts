@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Archive,
   Bookmark,
   Briefcase,
   Calendar,
@@ -70,6 +71,14 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     icon: Bookmark,
     section: "tracking",
     badgeTone: "default",
+  },
+  {
+    id: "archived",
+    label: "Archived",
+    href: `${ROUTES.scrappedJobs}?view=archived`,
+    icon: Archive,
+    section: "tracking",
+    badgeTone: "muted",
   },
   {
     id: "interviews",

@@ -12,6 +12,10 @@ from app.lib.listing_date_filter import ListingDateFilter
 from app.schemas.job_listing_responses import (
     JobListingAppliedSummaryResponse,
     JobListingAppliedToggleResponse,
+    JobListingArchiveToggleResponse,
+    JobListingArchivesSummaryResponse,
+    JobListingBulkArchiveRequest,
+    JobListingBulkArchiveResponse,
     JobListingDateCountsResponse,
     JobListingDetailResponse,
     JobListingErrorResponse,
@@ -82,6 +86,19 @@ async def job_listing_applied_summary(
 
 
 @router.get(
+    "/archives",
+    response_model=JobListingArchivesSummaryResponse,
+    responses={401: {"model": JobListingErrorResponse}},
+)
+async def job_listing_archives_summary(
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingArchivesSummaryResponse:
+    summary = await service.archives_summary_for_user(user_id)
+    return JobListingArchivesSummaryResponse(**summary)
+
+
+@router.get(
     "/filter-options",
     response_model=JobListingFilterOptionsResponse,
     responses={
@@ -97,6 +114,7 @@ async def job_listing_filter_options(
     listed_on: date | None = Query(None),
     favorites_only: bool = Query(False),
     applied_only: bool = Query(False),
+    archived_only: bool = Query(False),
 ) -> JobListingFilterOptionsResponse | JSONResponse:
     try:
         options = await service.filter_options_for_user(
@@ -106,6 +124,7 @@ async def job_listing_filter_options(
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            archived_only=archived_only,
         )
         return JobListingFilterOptionsResponse(**options)
     except ValueError as exc:
@@ -148,6 +167,10 @@ async def list_job_listings(
         False,
         description="When true, return only listings marked applied by the current user.",
     ),
+    archived_only: bool = Query(
+        False,
+        description="When true, return only listings archived by the current user.",
+    ),
     search: str | None = Query(
         None,
         max_length=200,
@@ -174,6 +197,7 @@ async def list_job_listings(
             listed_on=listed_on,
             favorites_only=favorites_only,
             applied_only=applied_only,
+            archived_only=archived_only,
             search=search,
             type_filter=type_filter,
             location=location,
@@ -184,6 +208,24 @@ async def list_job_listings(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         ) from exc
+
+
+@router.post(
+    "/bulk-archive",
+    response_model=JobListingBulkArchiveResponse,
+    responses={401: {"model": JobListingErrorResponse}},
+)
+async def bulk_archive_job_listings(
+    body: JobListingBulkArchiveRequest,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingBulkArchiveResponse:
+    result = await service.bulk_set_archived(
+        user_id,
+        body.listing_ids,
+        body.archived,
+    )
+    return JobListingBulkArchiveResponse(**result)
 
 
 @router.post(
@@ -277,6 +319,56 @@ async def unmark_job_listing_applied(
     try:
         result = await service.unmark_applied(user_id, listing_id)
         return JobListingAppliedToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.post(
+    "/{listing_id}/archive",
+    response_model=JobListingArchiveToggleResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def archive_job_listing(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingArchiveToggleResponse | JSONResponse:
+    try:
+        result = await service.archive(user_id, listing_id)
+        return JobListingArchiveToggleResponse(**result)
+    except JobListingNotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=JobListingErrorResponse(
+                message="Job listing not found.",
+            ).model_dump(),
+        )
+
+
+@router.delete(
+    "/{listing_id}/archive",
+    response_model=JobListingArchiveToggleResponse,
+    responses={
+        401: {"model": JobListingErrorResponse},
+        404: {"model": JobListingErrorResponse},
+    },
+)
+async def unarchive_job_listing(
+    listing_id: uuid.UUID,
+    user_id: uuid.UUID = Depends(get_current_user_id),
+    service: JobListingService = Depends(get_job_listing_service),
+) -> JobListingArchiveToggleResponse | JSONResponse:
+    try:
+        result = await service.unarchive(user_id, listing_id)
+        return JobListingArchiveToggleResponse(**result)
     except JobListingNotFoundError:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,

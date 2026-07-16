@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -26,6 +27,7 @@ class JobListingListItem(BaseModel):
     is_favorited: bool = False
     is_applied: bool = False
     applied_at: datetime | None = None
+    is_archived: bool = False
     note: str | None = None
     note_updated_at: datetime | None = None
 
@@ -40,6 +42,11 @@ class JobListingAppliedSummaryResponse(BaseModel):
     ids: list[str]
 
 
+class JobListingArchivesSummaryResponse(BaseModel):
+    count: int
+    ids: list[str]
+
+
 class JobListingFavoriteToggleResponse(BaseModel):
     favorited: bool
     count: int
@@ -48,6 +55,22 @@ class JobListingFavoriteToggleResponse(BaseModel):
 class JobListingAppliedToggleResponse(BaseModel):
     applied: bool
     count: int
+
+
+class JobListingArchiveToggleResponse(BaseModel):
+    archived: bool
+    count: int
+
+
+class JobListingBulkArchiveRequest(BaseModel):
+    listing_ids: list[UUID] = Field(..., min_length=1, max_length=100)
+    archived: bool
+
+
+class JobListingBulkArchiveResponse(BaseModel):
+    archived: bool
+    count: int
+    updated: int
 
 
 class JobListingNoteUpsertRequest(BaseModel):
@@ -104,5 +127,6 @@ class JobListingDetailResponse(BaseModel):
     is_favorited: bool = False
     is_applied: bool = False
     applied_at: datetime | None = None
+    is_archived: bool = False
     note: str | None = None
     note_updated_at: datetime | None = None
