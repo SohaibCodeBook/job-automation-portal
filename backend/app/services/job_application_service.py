@@ -47,7 +47,8 @@ def submission_to_row(body: JobApplicationSubmissionRequest) -> dict[str, Any]:
         "first_name": body.first_name,
         "last_name": body.last_name,
         "selected_industries": selected_industries,
-        "industry_names_from_naics": _join_semicolon(body.industry_names_from_naics),
+        # Column retained until DB drop; new submissions no longer collect NAICS names.
+        "industry_names_from_naics": None,
         "remote": body.remote,
         "hybrid": body.hybrid,
         "onsite": body.onsite,

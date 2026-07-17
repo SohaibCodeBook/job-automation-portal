@@ -165,20 +165,6 @@ export function JobSpecsWizardPage() {
                 />
               )}
             />
-            <Controller
-              control={control}
-              name="industryNamesFromNaics"
-              render={({ field }) => (
-                <TagInput
-                  id="industryNamesFromNaics"
-                  label="Industry Names from NAICS"
-                  tags={field.value ?? []}
-                  onTagsChange={field.onChange}
-                  error={errors.industryNamesFromNaics?.message}
-                  description="Optional NAICS-aligned names."
-                />
-              )}
-            />
           </div>
         );
       case "work-preferences": {

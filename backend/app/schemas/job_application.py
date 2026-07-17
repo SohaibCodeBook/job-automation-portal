@@ -53,10 +53,6 @@ class JobApplicationSubmissionRequest(BaseModel):
         ...,
         description="Target industries; null means all industries (no filter).",
     )
-    industry_names_from_naics: list[str] | None = Field(
-        default=None,
-        description="Optional NAICS-aligned industry names.",
-    )
 
     remote: bool = Field(default=False, description="Prefer or allow remote roles.")
     hybrid: bool = Field(default=False, description="Prefer or allow hybrid roles.")
@@ -173,7 +169,6 @@ class JobApplicationSubmissionRequest(BaseModel):
         return deduped
 
     @field_validator(
-        "industry_names_from_naics",
         "omit_words",
         "must_include",
         "selected_cities",
