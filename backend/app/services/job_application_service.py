@@ -44,6 +44,7 @@ def submission_to_row(body: JobApplicationSubmissionRequest) -> dict[str, Any]:
         selected_industries = ";".join(body.selected_industries)
 
     return {
+        "trigger_flow": True,
         "first_name": body.first_name,
         "last_name": body.last_name,
         "selected_industries": selected_industries,
