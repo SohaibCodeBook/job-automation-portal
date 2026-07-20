@@ -26,7 +26,6 @@ const payRangeEntrySchema = z.object({
 export const jobSearchFormSchema = z
   .object({
     firstName: requiredText,
-    lastName: requiredText,
     allIndustries: z.boolean().default(false),
     selectedIndustries: z.array(z.string().trim().min(1)).default([]),
     remote: z.boolean().default(false),

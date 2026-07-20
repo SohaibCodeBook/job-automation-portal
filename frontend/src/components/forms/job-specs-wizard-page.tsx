@@ -124,21 +124,12 @@ export function JobSpecsWizardPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <TextInputField
               id="firstName"
-              label="First Name"
-              placeholder="Enter first name"
+              label="Full Name"
+              placeholder="Enter full name"
               required
               error={errors.firstName?.message}
               description="Required field."
               {...register("firstName")}
-            />
-            <TextInputField
-              id="lastName"
-              label="Last Name"
-              placeholder="Enter last name"
-              required
-              error={errors.lastName?.message}
-              description="Required field."
-              {...register("lastName")}
             />
           </div>
         );

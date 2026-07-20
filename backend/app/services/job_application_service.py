@@ -46,7 +46,7 @@ def submission_to_row(body: JobApplicationSubmissionRequest) -> dict[str, Any]:
     return {
         "trigger_flow": True,
         "first_name": body.first_name,
-        "last_name": body.last_name,
+        "last_name": None,
         "selected_industries": selected_industries,
         # Column retained until DB drop; new submissions no longer collect NAICS names.
         "industry_names_from_naics": None,

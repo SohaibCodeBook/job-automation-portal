@@ -47,7 +47,6 @@ class JobApplicationSubmissionRequest(BaseModel):
     )
 
     first_name: NonEmptyStr = Field(..., max_length=120, description="Applicant first name.")
-    last_name: NonEmptyStr = Field(..., max_length=120, description="Applicant last name.")
 
     selected_industries: list[str] | None = Field(
         ...,
