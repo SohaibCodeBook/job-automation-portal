@@ -216,7 +216,7 @@ export function useJobListings(
     if (sessionStatus === "loading") return;
     if (!token) {
       setIsLoading(false);
-      setError("Sign in to view scrapped jobs.");
+      setError("Sign in to view discovered jobs.");
       setItems([]);
       setTotal(0);
       return;

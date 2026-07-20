@@ -25,7 +25,7 @@ export function JobListEmpty({
         ? "No favorites yet"
         : filtered
           ? "No jobs match your search"
-          : "No scrapped jobs yet";
+          : "No discovered jobs yet";
 
   const description = archivedView
     ? "Select jobs from All Jobs and archive them to clear your list without deleting."

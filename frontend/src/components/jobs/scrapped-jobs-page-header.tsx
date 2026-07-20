@@ -17,10 +17,10 @@ export function ScrappedJobsPageHeader({
   exportDisabled,
 }: ScrappedJobsPageHeaderProps) {
   return (
-    <header className="portal-page-toolbar" aria-label="Scrapped Jobs">
+    <header className="portal-page-toolbar" aria-label="Discovered Jobs">
       <div className="portal-page-toolbar-inner">
         <div className="min-w-0 space-y-0.5">
-          <h1 className="portal-page-toolbar-title">Scrapped Jobs</h1>
+          <h1 className="portal-page-toolbar-title">Discovered Jobs</h1>
           <p className="portal-page-toolbar-subtitle">{subtitle}</p>
         </div>
 

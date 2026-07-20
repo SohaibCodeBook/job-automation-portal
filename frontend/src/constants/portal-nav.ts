@@ -42,7 +42,7 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   },
   {
     id: "scrapped-jobs",
-    label: "Scrapped Jobs",
+    label: "Discovered Jobs",
     href: ROUTES.scrappedJobs,
     icon: Briefcase,
     section: "main",
