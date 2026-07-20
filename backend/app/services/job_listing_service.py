@@ -37,6 +37,7 @@ def _to_list_item(
     is_applied: bool = False,
     applied_at: object | None = None,
     is_archived: bool = False,
+    experience_levels: str | None = None,
     note: str | None = None,
     note_updated_at: object | None = None,
 ) -> dict[str, Any]:
@@ -53,6 +54,7 @@ def _to_list_item(
         "work_type": listing.work_type,
         "field": listing.field,
         "job_origin": listing.job_origin,
+        "experience_levels": experience_levels,
         "created_at": listing.created_at,
         "is_favorited": is_favorited,
         "is_applied": is_applied,
@@ -70,6 +72,7 @@ def _to_detail(
     is_applied: bool = False,
     applied_at: object | None = None,
     is_archived: bool = False,
+    experience_levels: str | None = None,
     note: str | None = None,
     note_updated_at: object | None = None,
 ) -> dict[str, Any]:
@@ -92,6 +95,7 @@ def _to_detail(
         "work_type": listing.work_type,
         "omit_words": listing.omit_words,
         "job_origin": listing.job_origin,
+        "experience_levels": experience_levels,
         "created_at": listing.created_at,
         "is_favorited": is_favorited,
         "is_applied": is_applied,
@@ -159,6 +163,10 @@ class JobListingService:
             location=location,
         )
         listing_ids = [row.id for row in listings]
+        application_ids = list({row.job_application_id for row in listings})
+        experience_by_app = await self._repo.experience_levels_by_application_ids(
+            application_ids
+        )
         favorite_ids = await self._favorites.favorite_ids_for_listings(
             user_id,
             listing_ids,
@@ -184,6 +192,7 @@ class JobListingService:
                     is_applied=row.id in applied_ids,
                     applied_at=applied_times.get(row.id),
                     is_archived=row.id in archived_ids,
+                    experience_levels=experience_by_app.get(row.job_application_id),
                     note=_normalize_note(notes[row.id].note)
                     if row.id in notes
                     else None,
@@ -265,12 +274,16 @@ class JobListingService:
         )
         notes = await self._notes.notes_for_listings(user_id, [listing.id])
         note_row = notes.get(listing.id)
+        experience_by_app = await self._repo.experience_levels_by_application_ids(
+            [listing.job_application_id]
+        )
         return _to_detail(
             listing,
             is_favorited=listing.id in favorite_ids,
             is_applied=listing.id in applied_ids,
             applied_at=applied_times.get(listing.id),
             is_archived=listing.id in archived_ids,
+            experience_levels=experience_by_app.get(listing.job_application_id),
             note=_normalize_note(note_row.note) if note_row else None,
             note_updated_at=note_row.updated_at if note_row else None,
         )

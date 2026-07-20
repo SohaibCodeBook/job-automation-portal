@@ -274,6 +274,17 @@ class JobListingRepository:
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def experience_levels_by_application_ids(
+        self, application_ids: list[uuid.UUID]
+    ) -> dict[uuid.UUID, str | None]:
+        if not application_ids:
+            return {}
+        stmt = select(JobApplication.id, JobApplication.experience_levels).where(
+            JobApplication.id.in_(application_ids)
+        )
+        result = await self._session.execute(stmt)
+        return {row[0]: row[1] for row in result.all()}
+
     async def list_owned_ids(
         self, user_id: uuid.UUID, listing_ids: list[uuid.UUID]
     ) -> list[uuid.UUID]:

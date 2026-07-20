@@ -23,6 +23,7 @@ class JobListingListItem(BaseModel):
     work_type: str | None = None
     field: str | None = None
     job_origin: str | None = None
+    experience_levels: str | None = None
     created_at: datetime | None = None
     is_favorited: bool = False
     is_applied: bool = False
@@ -123,6 +124,7 @@ class JobListingDetailResponse(BaseModel):
     work_type: str | None = None
     omit_words: str | None = None
     job_origin: str | None = None
+    experience_levels: str | None = None
     created_at: datetime | None = None
     is_favorited: bool = False
     is_applied: bool = False

@@ -11,6 +11,7 @@ import {
   companyInitials,
   formatListingCreatedAt,
   formatListingCreatedAtAbsolute,
+  splitExperienceLevels,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
 import type { JobListingDateFilter, JobListingDetail } from "@/types/job-listing";
@@ -231,6 +232,11 @@ export function JobDetailPanel({
               {detail.work_type ? (
                 <span className="job-card-tag">{detail.work_type}</span>
               ) : null}
+              {splitExperienceLevels(detail.experience_levels).map((level) => (
+                <span key={level} className="job-card-tag">
+                  {level}
+                </span>
+              ))}
               {detail.field ? <span className="job-card-tag">{detail.field}</span> : null}
               {detail.job_origin ? (
                 <span className="job-card-tag">{detail.job_origin}</span>
@@ -261,6 +267,13 @@ export function JobDetailPanel({
               <DetailField label="Pay range" value={detail.pay_range} />
               <DetailField label="Employment type" value={detail.employment_type} />
               <DetailField label="Work type" value={detail.work_type} />
+              <DetailField
+                label="Experience levels"
+                value={
+                  splitExperienceLevels(detail.experience_levels).join(", ") ||
+                  null
+                }
+              />
               <DetailField
                 label="Listed"
                 value={formatListingCreatedAt(detail.created_at, {

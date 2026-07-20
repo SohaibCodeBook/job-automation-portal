@@ -11,6 +11,7 @@ export type JobListingListItem = {
   work_type: string | null;
   field: string | null;
   job_origin: string | null;
+  experience_levels?: string | null;
   created_at: string | null;
   is_favorited?: boolean;
   is_applied?: boolean;

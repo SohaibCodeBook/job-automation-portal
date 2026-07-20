@@ -11,6 +11,7 @@ import {
   formatListingCreatedAt,
   formatListingCreatedAtAbsolute,
   isNewToday,
+  splitExperienceLevels,
 } from "@/lib/jobs-display";
 import { cn } from "@/lib/utils";
 import type { JobListingDateFilter, JobListingListItem } from "@/types/job-listing";
@@ -53,6 +54,7 @@ export function JobCard({
   const tags = [
     job.employment_type,
     job.work_type,
+    ...splitExperienceLevels(job.experience_levels),
     job.field,
     job.job_origin,
   ].filter(Boolean) as string[];
