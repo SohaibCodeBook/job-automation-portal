@@ -43,7 +43,7 @@ export function ScrappedJobsPlaceholder() {
   return (
     <>
       <PortalHeader
-        title="Discovered Jobs",
+        title="Discovered Jobs"
         subtitle="Last synced — waiting for job listings"
         actions={
           <>
