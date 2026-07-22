@@ -5,6 +5,7 @@ import { EMPLOYMENT_TYPE_OPTIONS } from "@/constants/job-search-form";
 import {
   requiredStringArray,
   requiredText,
+  requiredPhone,
   optionalUrl,
   validationMessages,
 } from "@/schemas/shared";
@@ -26,6 +27,7 @@ const payRangeEntrySchema = z.object({
 export const jobSearchFormSchema = z
   .object({
     firstName: requiredText,
+    phone: requiredPhone,
     allIndustries: z.boolean().default(false),
     selectedIndustries: z.array(z.string().trim().min(1)).default([]),
     remote: z.boolean().default(false),

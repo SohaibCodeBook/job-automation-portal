@@ -256,16 +256,41 @@ class AuthService:
             "name": _display_name(user.raw_user_meta_data, user.email),
             "email_verified": user.email_confirmed_at is not None,
             "auth_provider": "credentials" if has_password else "google",
+            "phone": (user.phone or "").strip() or None,
         }
 
-    async def update_profile(self, user_id: uuid.UUID, *, name: str) -> dict[str, Any]:
-        full_name = name.strip()
-        if not full_name:
-            raise AuthError("Name is required.", code="validation_error")
+    async def update_profile(
+        self,
+        user_id: uuid.UUID,
+        *,
+        name: str | None = None,
+        phone: str | None = None,
+    ) -> dict[str, Any]:
+        if name is None and phone is None:
+            raise AuthError(
+                "At least one profile field is required.",
+                code="validation_error",
+            )
 
-        updated = await self._users.update_display_name(user_id, full_name)
-        if not updated:
-            raise AuthError("User not found.", code="not_found")
+        if name is not None:
+            full_name = name.strip()
+            if not full_name:
+                raise AuthError("Name is required.", code="validation_error")
+            updated = await self._users.update_display_name(user_id, full_name)
+            if not updated:
+                raise AuthError("User not found.", code="not_found")
+
+        if phone is not None:
+            normalized_phone = phone.strip()
+            if len(normalized_phone) < 7:
+                raise AuthError(
+                    "Enter a valid phone number.",
+                    code="validation_error",
+                )
+            updated = await self._users.update_phone(user_id, normalized_phone)
+            if not updated:
+                raise AuthError("User not found.", code="not_found")
+
         await self._session.commit()
         return await self.get_me(user_id)
 

@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 
 class RegisterRequest(BaseModel):
@@ -59,10 +59,18 @@ class UserMeResponse(BaseModel):
     name: str
     email_verified: bool
     auth_provider: Literal["credentials", "google"]
+    phone: str | None = None
 
 
 class UpdateProfileRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=120)
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    phone: str | None = Field(default=None, min_length=7, max_length=30)
+
+    @model_validator(mode="after")
+    def require_at_least_one_field(self) -> UpdateProfileRequest:
+        if self.name is None and self.phone is None:
+            raise ValueError("At least one of name or phone must be provided.")
+        return self
 
 
 class ChangePasswordRequest(BaseModel):

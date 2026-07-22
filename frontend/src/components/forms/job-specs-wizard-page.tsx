@@ -62,6 +62,8 @@ export function JobSpecsWizardPage() {
     resumeFile,
     setResumeFile,
     resumeFileError,
+    phoneLocked,
+    profileLoading,
   } = useJobSearchSpecificationsForm();
   const {
     register,
@@ -130,6 +132,23 @@ export function JobSpecsWizardPage() {
               error={errors.firstName?.message}
               description="Required field."
               {...register("firstName")}
+            />
+            <TextInputField
+              id="phone"
+              label="Phone Number"
+              placeholder="Enter phone number"
+              type="tel"
+              autoComplete="tel"
+              required
+              readOnly={phoneLocked}
+              disabled={profileLoading}
+              error={errors.phone?.message}
+              description={
+                phoneLocked
+                  ? "Saved on your account. You can change this in Settings later."
+                  : "Required field."
+              }
+              {...register("phone")}
             />
           </div>
         );

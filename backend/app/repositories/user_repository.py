@@ -156,6 +156,15 @@ class UserRepository:
         await self._session.flush()
         return True
 
+    async def update_phone(self, user_id: uuid.UUID, phone: str) -> bool:
+        user = await self.get_user_profile(user_id)
+        if user is None:
+            return False
+        user.phone = phone.strip()
+        user.updated_at = datetime.now(UTC)
+        await self._session.flush()
+        return True
+
     async def insert_google_auth_user(
         self,
         *,

@@ -4,6 +4,7 @@ export const validationMessages = {
   required: "This field is required.",
   selectAtLeastOne: "Please select at least one option.",
   invalidUrl: "Please enter a valid URL.",
+  invalidPhone: "Enter a valid phone number.",
   limitJobsFixed: "Limit jobs must remain set to 25.",
   jobTitleTagsMaxLength:
     "Combined tags must be at most 200 characters (API limit).",
@@ -14,6 +15,13 @@ export const validationMessages = {
 } as const;
 
 export const requiredText = z.string().trim().min(1, validationMessages.required);
+
+export const requiredPhone = z
+  .string()
+  .trim()
+  .min(7, validationMessages.invalidPhone)
+  .max(30, validationMessages.invalidPhone)
+  .regex(/^[\d+\s().-]+$/, validationMessages.invalidPhone);
 
 export const optionalText = z.string().trim().optional().or(z.literal(""));
 

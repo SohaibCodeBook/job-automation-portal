@@ -60,7 +60,11 @@ async def update_me(
     auth: AuthService = Depends(get_auth_service),
 ) -> UserMeResponse | JSONResponse:
     try:
-        profile = await auth.update_profile(user_id, name=body.name)
+        profile = await auth.update_profile(
+            user_id,
+            name=body.name,
+            phone=body.phone,
+        )
         return UserMeResponse(**profile)
     except AuthError as exc:
         return _auth_error_response(exc)

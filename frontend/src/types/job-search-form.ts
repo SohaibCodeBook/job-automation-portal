@@ -8,6 +8,7 @@ export type JobSearchFormInput = z.input<typeof jobSearchFormSchema>;
 
 export const defaultJobSearchFormValues: JobSearchFormValues = {
   firstName: "",
+  phone: "",
   allIndustries: false,
   selectedIndustries: [],
   remote: false,
