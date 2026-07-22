@@ -133,6 +133,18 @@ export function ScrappedJobsPage() {
   );
   const locations = filterOptions.locations;
 
+  React.useEffect(() => {
+    if (typeFilter && !typeOptions.includes(typeFilter)) {
+      setTypeFilter("");
+    }
+  }, [typeFilter, typeOptions]);
+
+  React.useEffect(() => {
+    if (locationFilter && !locations.includes(locationFilter)) {
+      setLocationFilter("");
+    }
+  }, [locationFilter, locations]);
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const hasDetail = selectedId != null;
 

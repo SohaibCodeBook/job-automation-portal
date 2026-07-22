@@ -186,6 +186,9 @@ export function useJobListings(
       favoritesOnly,
       appliedOnly,
       archivedOnly,
+      search: debouncedSearch,
+      typeFilter,
+      location: locationFilter,
     })
       .then((options) => {
         if (!cancelled) setFilterOptions(options);
@@ -208,6 +211,9 @@ export function useJobListings(
     favoritesOnly,
     appliedOnly,
     archivedOnly,
+    debouncedSearch,
+    typeFilter,
+    locationFilter,
     fetchKey,
   ]);
 

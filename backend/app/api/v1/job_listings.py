@@ -115,6 +115,21 @@ async def job_listing_filter_options(
     favorites_only: bool = Query(False),
     applied_only: bool = Query(False),
     archived_only: bool = Query(False),
+    search: str | None = Query(
+        None,
+        max_length=200,
+        description="Keyword search used to narrow filter option lists.",
+    ),
+    type_filter: str | None = Query(
+        None,
+        max_length=200,
+        description="When set, location options are limited to this employment/work type.",
+    ),
+    location: str | None = Query(
+        None,
+        max_length=500,
+        description="When set, type options are limited to this location.",
+    ),
 ) -> JobListingFilterOptionsResponse | JSONResponse:
     try:
         options = await service.filter_options_for_user(
@@ -125,6 +140,9 @@ async def job_listing_filter_options(
             favorites_only=favorites_only,
             applied_only=applied_only,
             archived_only=archived_only,
+            search=search,
+            type_filter=type_filter,
+            location=location,
         )
         return JobListingFilterOptionsResponse(**options)
     except ValueError as exc:

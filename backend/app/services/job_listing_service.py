@@ -217,6 +217,9 @@ class JobListingService:
         favorites_only: bool = False,
         applied_only: bool = False,
         archived_only: bool = False,
+        search: str | None = None,
+        type_filter: str | None = None,
+        location: str | None = None,
     ) -> dict[str, Any]:
         bucket = _parse_date_filter(date_filter)
         if bucket == ListingDateFilter.ON_DATE and listed_on is None:
@@ -230,6 +233,9 @@ class JobListingService:
             favorites_only=favorites_only,
             applied_only=applied_only,
             archived_only=archived_only,
+            search=search,
+            type_filter=type_filter,
+            location=location,
         )
 
     async def date_counts_for_user(

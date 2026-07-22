@@ -183,19 +183,27 @@ class JobListingRepository:
         favorites_only: bool = False,
         applied_only: bool = False,
         archived_only: bool = False,
+        search: str | None = None,
+        type_filter: str | None = None,
+        location: str | None = None,
     ) -> dict[str, list[str]]:
         join = self._join_on_application()
-        clauses = self._all_clauses(
-            user_id,
-            job_application_id=job_application_id,
-            date_filter=date_filter,
-            listed_on=listed_on,
-            favorites_only=favorites_only,
-            applied_only=applied_only,
-            archived_only=archived_only,
-        )
+        base_kwargs = {
+            "user_id": user_id,
+            "job_application_id": job_application_id,
+            "date_filter": date_filter,
+            "listed_on": listed_on,
+            "favorites_only": favorites_only,
+            "applied_only": applied_only,
+            "archived_only": archived_only,
+            "search": search,
+        }
 
-        async def distinct_values(column) -> list[str]:
+        async def distinct_values(
+            column,
+            *,
+            clauses: list,
+        ) -> list[str]:
             stmt = (
                 select(column)
                 .select_from(JobListing)
@@ -224,10 +232,30 @@ class JobListingRepository:
             result = await self._session.execute(stmt)
             return list(result.scalars().all())
 
+        type_clauses = self._all_clauses(
+            **base_kwargs,
+            type_filter=None,
+            location=location,
+        )
+        location_clauses = self._all_clauses(
+            **base_kwargs,
+            type_filter=type_filter,
+            location=None,
+        )
+
         return {
-            "employment_types": await distinct_values(JobListing.employment_type),
-            "work_types": await distinct_values(JobListing.work_type),
-            "locations": await distinct_values(JobListing.location),
+            "employment_types": await distinct_values(
+                JobListing.employment_type,
+                clauses=type_clauses,
+            ),
+            "work_types": await distinct_values(
+                JobListing.work_type,
+                clauses=type_clauses,
+            ),
+            "locations": await distinct_values(
+                JobListing.location,
+                clauses=location_clauses,
+            ),
         }
 
     async def count_by_date_filters(
