@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 
 import { PortalHeader } from "@/components/portal";
 import { AccountProfileSection } from "@/components/settings/account-profile-section";
+import { AccountPhoneSection } from "@/components/settings/account-phone-section";
 import { ChangePasswordSection } from "@/components/settings/change-password-section";
 import { DeleteAccountSection } from "@/components/settings/delete-account-section";
 import { getCurrentUser, type UserMe } from "@/lib/api/users";
@@ -37,6 +38,10 @@ export function SettingsPage() {
       />
 
       <AccountProfileSection
+        profile={profile}
+        onProfileUpdated={setProfile}
+      />
+      <AccountPhoneSection
         profile={profile}
         onProfileUpdated={setProfile}
       />
