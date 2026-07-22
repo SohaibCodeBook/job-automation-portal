@@ -67,7 +67,7 @@ class UpdateProfileRequest(BaseModel):
     phone: str | None = Field(default=None, min_length=7, max_length=30)
 
     @model_validator(mode="after")
-    def require_at_least_one_field(self) -> UpdateProfileRequest:
+    def require_at_least_one_field(self):
         if self.name is None and self.phone is None:
             raise ValueError("At least one of name or phone must be provided.")
         return self
