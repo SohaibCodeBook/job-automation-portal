@@ -5,7 +5,6 @@ import { EMPLOYMENT_TYPE_OPTIONS } from "@/constants/job-search-form";
 import {
   requiredStringArray,
   requiredText,
-  requiredPhone,
   optionalUrl,
   validationMessages,
 } from "@/schemas/shared";
@@ -27,7 +26,9 @@ const payRangeEntrySchema = z.object({
 export const jobSearchFormSchema = z
   .object({
     firstName: requiredText,
-    phone: requiredPhone,
+    phoneAlreadySaved: z.boolean().default(false),
+    phoneCountryCode: z.string().trim().default(""),
+    phoneNumber: z.string().trim().default(""),
     allIndustries: z.boolean().default(false),
     selectedIndustries: z.array(z.string().trim().min(1)).default([]),
     remote: z.boolean().default(false),
@@ -72,6 +73,24 @@ export const jobSearchFormSchema = z
     }),
   })
   .superRefine((values, ctx) => {
+    if (!values.phoneAlreadySaved) {
+      if (values.phoneCountryCode.length !== 2) {
+        ctx.addIssue({
+          code: "custom",
+          message: validationMessages.required,
+          path: ["phoneCountryCode"],
+        });
+      }
+      const digits = values.phoneNumber.replace(/\D/g, "");
+      if (digits.length < 6 || digits.length > 15) {
+        ctx.addIssue({
+          code: "custom",
+          message: validationMessages.invalidPhone,
+          path: ["phoneNumber"],
+        });
+      }
+    }
+
     const hybridCities = values.selectedCities ?? [];
     const hybridStates = values.selectedStates ?? [];
 

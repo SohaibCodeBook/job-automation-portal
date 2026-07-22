@@ -22,7 +22,7 @@ export const JOB_SEARCH_WIZARD_STEPS: WizardStep[] = [
     id: "personal-information",
     title: "Step 1 — Personal Information",
     description: "Basic identity details used for personalization.",
-    fields: ["firstName", "phone"],
+    fields: ["firstName", "phoneCountryCode", "phoneNumber", "phoneAlreadySaved"],
   },
   {
     id: "industry-preferences",

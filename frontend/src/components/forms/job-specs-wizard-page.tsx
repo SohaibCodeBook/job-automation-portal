@@ -42,6 +42,7 @@ import {
   getActiveWizardStepIndex,
 } from "@/lib/job-search-wizard-progress";
 import { ResumeFileUpload } from "@/components/forms/resume-file-upload";
+import { PhoneNumberField } from "@/components/forms/phone-number-field";
 import { useJobSearchSpecificationsForm } from "@/hooks/use-job-search-specifications-form";
 import { getFieldErrorMessage } from "@/lib/validation";
 import { JOB_LIMIT } from "@/schemas/job-search-form";
@@ -64,6 +65,7 @@ export function JobSpecsWizardPage() {
     resumeFileError,
     phoneLocked,
     profileLoading,
+    lockedDisplayPhone,
   } = useJobSearchSpecificationsForm();
   const {
     register,
@@ -133,22 +135,12 @@ export function JobSpecsWizardPage() {
               description="Required field."
               {...register("firstName")}
             />
-            <TextInputField
-              id="phone"
-              label="Phone Number"
-              placeholder="Enter phone number"
-              type="tel"
-              autoComplete="tel"
-              required
+            <PhoneNumberField
+              control={control}
+              errors={errors}
               readOnly={phoneLocked}
               disabled={profileLoading}
-              error={errors.phone?.message}
-              description={
-                phoneLocked
-                  ? "Saved on your account. You can change this in Settings later."
-                  : "Required field."
-              }
-              {...register("phone")}
+              lockedDisplayPhone={lockedDisplayPhone}
             />
           </div>
         );

@@ -10,12 +10,32 @@ import {
   submitJobApplication,
 } from "@/lib/api/job-applications";
 import { getCurrentUser, updateProfile } from "@/lib/api/users";
+import { formatPhoneNumber, parseStoredPhone } from "@/lib/phone-countries";
 import { createZodResolver } from "@/lib/validation";
 import { jobSearchFormSchema } from "@/schemas/job-search-form";
 import {
   defaultJobSearchFormValues,
   type JobSearchFormValues,
 } from "@/types/job-search-form";
+
+function phoneFieldsFromSaved(savedPhone: string): Pick<
+  JobSearchFormValues,
+  "phoneAlreadySaved" | "phoneCountryCode" | "phoneNumber"
+> {
+  const parsed = parseStoredPhone(savedPhone);
+  if (parsed) {
+    return {
+      phoneAlreadySaved: true,
+      phoneCountryCode: parsed.isoCode,
+      phoneNumber: parsed.localNumber,
+    };
+  }
+  return {
+    phoneAlreadySaved: true,
+    phoneCountryCode: "",
+    phoneNumber: "",
+  };
+}
 
 export function useJobSearchSpecificationsForm() {
   const { data: session, status: sessionStatus } = useSession();
@@ -26,6 +46,9 @@ export function useJobSearchSpecificationsForm() {
   const [resumeFileError, setResumeFileError] = useState<string | null>(null);
   const [phoneLocked, setPhoneLocked] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [lockedDisplayPhone, setLockedDisplayPhone] = useState<string | null>(
+    null,
+  );
   const savedPhoneRef = useRef("");
 
   const form = useForm<JobSearchFormValues>({
@@ -48,7 +71,15 @@ export function useJobSearchSpecificationsForm() {
       if (cancelled) return;
       if (result.ok && result.user.phone) {
         savedPhoneRef.current = result.user.phone;
-        form.setValue("phone", result.user.phone);
+        const parsed = parseStoredPhone(result.user.phone);
+        if (parsed) {
+          form.setValue("phoneCountryCode", parsed.isoCode);
+          form.setValue("phoneNumber", parsed.localNumber);
+          setLockedDisplayPhone(null);
+        } else {
+          setLockedDisplayPhone(result.user.phone);
+        }
+        form.setValue("phoneAlreadySaved", true);
         setPhoneLocked(true);
       }
       setProfileLoading(false);
@@ -79,13 +110,21 @@ export function useJobSearchSpecificationsForm() {
 
     try {
       if (!phoneLocked) {
+        const fullPhone = formatPhoneNumber(
+          values.phoneCountryCode,
+          values.phoneNumber,
+        );
         const phoneResult = await updateProfile(accessToken, {
-          phone: values.phone.trim(),
+          phone: fullPhone,
         });
         if (!phoneResult.ok) {
           throw new Error(phoneResult.message);
         }
-        savedPhoneRef.current = values.phone.trim();
+        savedPhoneRef.current = fullPhone;
+        setLockedDisplayPhone(null);
+        form.setValue("phoneAlreadySaved", true);
+        form.setValue("phoneCountryCode", values.phoneCountryCode);
+        form.setValue("phoneNumber", values.phoneNumber.replace(/\D/g, ""));
         setPhoneLocked(true);
       }
 
@@ -94,7 +133,7 @@ export function useJobSearchSpecificationsForm() {
       setSubmitMessage(result.message ?? "Job application created successfully.");
       form.reset({
         ...defaultJobSearchFormValues,
-        phone: savedPhoneRef.current,
+        ...phoneFieldsFromSaved(savedPhoneRef.current),
       });
       setResumeFile(null);
     } catch (error) {
@@ -117,5 +156,6 @@ export function useJobSearchSpecificationsForm() {
     resumeFileError,
     phoneLocked,
     profileLoading,
+    lockedDisplayPhone,
   };
 }

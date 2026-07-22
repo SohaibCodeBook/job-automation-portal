@@ -16,12 +16,20 @@ export const validationMessages = {
 
 export const requiredText = z.string().trim().min(1, validationMessages.required);
 
-export const requiredPhone = z
+export const requiredPhoneCountryCode = z
   .string()
   .trim()
-  .min(7, validationMessages.invalidPhone)
-  .max(30, validationMessages.invalidPhone)
-  .regex(/^[\d+\s().-]+$/, validationMessages.invalidPhone);
+  .min(2, validationMessages.required)
+  .max(2, validationMessages.required);
+
+export const requiredPhoneNumber = z
+  .string()
+  .trim()
+  .min(1, validationMessages.invalidPhone)
+  .transform((value) => value.replace(/\D/g, ""))
+  .refine((digits) => digits.length >= 6 && digits.length <= 15, {
+    message: validationMessages.invalidPhone,
+  });
 
 export const optionalText = z.string().trim().optional().or(z.literal(""));
 
